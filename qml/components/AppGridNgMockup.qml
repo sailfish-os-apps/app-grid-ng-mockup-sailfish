@@ -140,6 +140,7 @@ Item {
         property real old : 0.0;
 
         Item {
+            visible: false;
             height: parent.height;
             anchors {
                 left: parent.left;
@@ -149,6 +150,12 @@ Item {
             }
 
             Behavior on anchors.bottomMargin { NumberAnimation { duration: 280; } }
+            Timer {
+                repeat: false;
+                running: true;
+                interval: 850;
+                onTriggered: { parent.visible = true; }
+            }
             Rectangle {
                 color: "black";
                 opacity: 0.65;
