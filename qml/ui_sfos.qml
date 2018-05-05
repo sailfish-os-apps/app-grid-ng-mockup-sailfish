@@ -3,6 +3,7 @@ import Sailfish.Silica 1.0;
 import "components";
 
 ApplicationWindow {
+    cover: undefined; // NOTE : transparent cover that let user see the actual app content
     allowedOrientations: defaultAllowedOrientations;
     initialPage: Component {
         Page {
