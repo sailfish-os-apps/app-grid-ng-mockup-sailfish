@@ -154,6 +154,17 @@ Item {
                 opacity: 0.65;
                 anchors.fill: parent;
             }
+            Rectangle {
+                color: secondaryColor;
+                radius: (implicitHeight * 0.5);
+                antialiasing: true;
+                implicitWidth: (parent.width / 5);
+                implicitHeight: 6;
+                anchors {
+                    verticalCenter: parent.top;
+                    horizontalCenter: parent.horizontalCenter;
+                }
+            }
             Flickable {
                 clip: true;
                 contentHeight: layout.height;
