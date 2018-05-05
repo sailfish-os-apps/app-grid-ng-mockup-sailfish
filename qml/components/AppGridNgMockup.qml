@@ -1,34 +1,44 @@
-import QtQuick 2.9;
-import QtQuick.Window 2.1;
+import QtQuick 2.6;
 
-Window {
-    id: window;
-    width: 540;
-    height: 960;
-    visible: true;
+Item {
+    id: base;
+    width: 480;
+    height: 800;
 
     property bool shown : false;
 
     property string currentGroup : "";
 
-    readonly property color accentColor    : Qt.lighter ("steelblue");
-    readonly property color primaryColor   : "white";
-    readonly property color secondaryColor : Qt.rgba(1,1,1,0.5);
+    property color accentColor    : Qt.lighter ("steelblue");
+    property color primaryColor   : "white";
+    property color secondaryColor : Qt.rgba(1,1,1,0.5);
 
-    readonly property real itemSize : (width / Math.floor (width / 120));
+    property string fontName : "Ubuntu";
 
-    Image {
-        source: "images/wallpaper.jpg";
-        asynchronous: true;
-        fillMode: Image.PreserveAspectCrop;
-        verticalAlignment: Image.AlignVCenter;
-        horizontalAlignment: Image.AlignHCenter;
-        anchors.fill: parent;
+    property int headerSize : 80;
+
+    property int fontSizeBig    : 24;
+    property int fontSizeNormal : 18;
+    property int fontSizeSmall  : 16;
+
+    property size iconSizeBig    : Qt.size (84, 84);
+    property size iconSizeNormal : Qt.size (48, 48);
+    property size iconSizeSmall  : Qt.size (20, 20);
+
+    property real itemSize : (width / Math.floor (width / 135));
+
+    property QtObject tmp : null;
+
+    function launchApp (label, icon) {
+        tmp = compoLaunchAnim.createObject (overlay, { "icon" : icon });
+        currentGroup = "";
+        shown = false;
     }
+
     Item {
         id: statusbar;
         z: 99999;
-        implicitHeight: 50;
+        implicitHeight: (row.height + row.anchors.margins * 2);
         anchors {
             top: parent.top;
             left: parent.left;
@@ -36,6 +46,7 @@ Window {
         }
 
         Row {
+            id: row;
             spacing: 8;
             anchors {
                 left: parent.left;
@@ -44,17 +55,17 @@ Window {
             }
 
             Image {
-                source: "symbols/icon-system-battery.png";
-                sourceSize: Qt.size (20, 20);
+                source: "qrc:///symbols/icon-system-battery.png";
+                sourceSize: iconSizeSmall;
                 anchors.verticalCenter: parent.verticalCenter;
             }
             Text {
                 text: "42%";
                 color: secondaryColor;
                 font {
-                    family: "Ubuntu";
+                    family: fontName;
                     weight: Font.Light;
-                    pixelSize: 18;
+                    pixelSize: fontSizeNormal;
                 }
                 anchors.verticalCenter: parent.verticalCenter;
             }
@@ -63,8 +74,8 @@ Window {
             text: "13:37";
             color: primaryColor;
             font {
-                family: "Ubuntu";
-                pixelSize: 24;
+                family: fontName;
+                pixelSize: fontSizeBig;
                 weight: Font.Light;
             }
             anchors.centerIn: parent;
@@ -78,8 +89,8 @@ Window {
             }
 
             Image {
-                source: (flag ? "symbols/icon-status-data-download.png" : "symbols/icon-status-data-upload.png");
-                sourceSize: Qt.size (20, 20);
+                source: (flag ? "qrc:///symbols/icon-status-data-download.png" : "qrc:///symbols/icon-status-data-upload.png");
+                sourceSize: iconSizeSmall;
                 anchors.verticalCenter: parent.verticalCenter;
 
                 property bool flag : false;
@@ -95,15 +106,15 @@ Window {
                 text: "4G+";
                 color: secondaryColor;
                 font {
-                    family: "Ubuntu";
+                    family: fontName;
                     weight: Font.Light;
-                    pixelSize: 18;
+                    pixelSize: fontSizeNormal;
                 }
                 anchors.verticalCenter: parent.verticalCenter;
             }
             Image {
-                source: "symbols/icon-status-cellular-4.png";
-                sourceSize: Qt.size (20, 20);
+                source: "qrc:///symbols/icon-status-cellular-4.png";
+                sourceSize: iconSizeSmall;
                 anchors.verticalCenter: parent.verticalCenter;
             }
         }
@@ -237,7 +248,7 @@ Window {
                             MouseArea {
                                 id: header;
                                 visible: !group.isDefault;
-                                implicitHeight: 80;
+                                implicitHeight: headerSize;
                                 anchors {
                                     left: parent.left;
                                     right: parent.right;
@@ -253,7 +264,6 @@ Window {
                                     Behavior on opacity { NumberAnimation { duration: 280; } }
                                 }
                                 Row {
-                                    id: row;
                                     spacing: 24;
                                     anchors {
                                         left: parent.left;
@@ -262,7 +272,7 @@ Window {
                                     }
 
                                     Image {
-                                        source: "symbols/chevron.png";
+                                        source: "qrc:///symbols/chevron.png";
                                         opacity: 0.65;
                                         rotation: (!group.isCurrent ? -90 : 0);
                                         anchors.verticalCenter: parent.verticalCenter;
@@ -280,19 +290,16 @@ Window {
                                             model: modelData ["apps"].slice (0, 3);
                                             delegate: Image {
                                                 scale: opacity;
-                                                source: "icons/%1.png".arg (modelData ["icon"]);
+                                                source: "qrc:///logos/%1.png".arg (modelData ["icon"]);
                                                 smooth: true;
                                                 mipmap: true;
-                                                sourceSize: Qt.size (48, 48);
+                                                sourceSize: iconSizeNormal;
                                                 antialiasing: true;
                                                 anchors.verticalCenter: parent.verticalCenter;
 
                                                 MouseArea {
                                                     anchors.fill: parent;
-                                                    onClicked: {
-                                                        currentGroup = "";
-                                                        shown = false;
-                                                    }
+                                                    onClicked: { launchApp (modelData ["label"], modelData ["icon"]); }
                                                 }
                                             }
                                         }
@@ -300,9 +307,9 @@ Window {
                                             text: (modelData ["apps"].length > 3 ? "+%1".arg (modelData ["apps"].length -3) : "");
                                             color: secondaryColor;
                                             font {
-                                                family: "Ubuntu";
+                                                family: fontName;
                                                 weight: Font.Light;
-                                                pixelSize: 18;
+                                                pixelSize: fontSizeNormal;
                                             }
                                             anchors.bottom: parent.bottom;
                                         }
@@ -313,8 +320,8 @@ Window {
                                     text: modelData ["group"];
                                     color: accentColor;
                                     font {
-                                        family: "Ubuntu";
-                                        pixelSize: 22;
+                                        family: fontName;
+                                        pixelSize: fontSizeBig;
                                         weight: Font.Light;
                                     }
                                     anchors {
@@ -354,10 +361,7 @@ Window {
                                             visible: (opacity > 0.0);
                                             implicitWidth: itemSize;
                                             implicitHeight: itemSize;
-                                            onClicked: {
-                                                currentGroup = "";
-                                                shown = false;
-                                            }
+                                            onClicked: { launchApp (modelData ["label"], modelData ["icon"]); }
 
                                             Behavior on opacity { NumberAnimation { duration: 280; } }
                                             Column {
@@ -365,10 +369,13 @@ Window {
                                                 anchors.centerIn: parent;
 
                                                 Image {
-                                                    source: "icons/%1.png".arg (modelData ["icon"]);
+                                                    width: iconSizeBig.width;
+                                                    height: iconSizeBig.height;
+                                                    source: "qrc:///logos/%1.png".arg (modelData ["icon"]);
                                                     smooth: true;
                                                     mipmap: true;
-                                                    sourceSize: Qt.size (84, 84);
+                                                    fillMode: Image.Stretch;
+                                                    sourceSize: iconSizeBig;
                                                     antialiasing: true;
                                                     anchors.horizontalCenter: parent.horizontalCenter;
                                                 }
@@ -376,8 +383,8 @@ Window {
                                                     text: modelData ["label"];
                                                     color: secondaryColor;
                                                     font {
-                                                        family: "Ubuntu";
-                                                        pixelSize: 16;
+                                                        family: fontName;
+                                                        pixelSize: fontSizeSmall;
                                                         weight: Font.Light;
                                                     }
                                                     anchors.horizontalCenter: parent.horizontalCenter;
@@ -389,6 +396,50 @@ Window {
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+    Item {
+        id: overlay;
+        anchors.fill: parent;
+    }
+    Component {
+        id: compoLaunchAnim;
+
+        Image {
+            id: throbber;
+            source: "qrc:///logos/%1.png".arg (icon);
+            width: iconSizeBig.width;
+            height: iconSizeBig.height;
+            smooth: true;
+            mipmap: true;
+            fillMode: Image.Stretch;
+            sourceSize: iconSizeBig;
+            antialiasing: true;
+            anchors.centerIn: parent;
+
+            property string icon : "";
+
+            Image {
+                id: circle;
+                source: "qrc:///symbols/graphic-busyindicator-large.png";
+                anchors.centerIn: parent;
+            }
+            SequentialAnimation {
+                loops: 1;
+                running: true;
+                alwaysRunToEnd: true;
+
+                NumberAnimation {
+                    target: circle;
+                    property: "rotation";
+                    duration: 1285;
+                    from: 0;
+                    to: 359;
+                }
+                ScriptAction {
+                    script: { throbber.destroy (); }
                 }
             }
         }

@@ -1,14 +1,14 @@
 import qbs;
 
 Project {
-    name: "AppGrid";
+    name: "AppGridNgMockup";
     minimumQbsVersion: "1.7.0";
     references: [];
 
     Product {
-        name: "app-AppGrid";
+        name: "app-grid-ng-mockup";
         type: "application";
-        targetName: "AppGrid";
+        targetName: "AppGridNgMockup";
         cpp.rpaths: ["$ORIGIN", "$ORIGIN/lib"];
         cpp.cxxLanguageVersion: "c++11";
         Qt.core.resourcePrefix: "/";
@@ -25,82 +25,83 @@ Project {
         Group {
             name: "C++ files";
             files: [
-                "main.cpp",
-            ];
+                "src/main_generic.cpp",
+            ]
         }
         Group {
             name: "QML Files";
             fileTags: "qt.core.resource_data";
             files: [
-                "ui.qml",
+                "qml/ui_generic.qml",
+                "qml/components/AppGridNgMockup.qml",
             ]
         }
         Group {
             name: "Images";
             fileTags: "qt.core.resource_data";
             files: [
-                "icons/discord.png",
-                "icons/facebook.png",
-                "icons/icon-launcher-accounts.png",
-                "icons/icon-launcher-android-support.png",
-                "icons/icon-launcher-bookmark.png",
-                "icons/icon-launcher-browser.png",
-                "icons/icon-launcher-calculator.png",
-                "icons/icon-launcher-calendar.png",
-                "icons/icon-launcher-camera.png",
-                "icons/icon-launcher-clock.png",
-                "icons/icon-launcher-component-gallery.png",
-                "icons/icon-launcher-default.png",
-                "icons/icon-launcher-dummy.png",
-                "icons/icon-launcher-email.png",
-                "icons/icon-launcher-file-manager.png",
-                "icons/icon-launcher-gallery.png",
-                "icons/icon-launcher-jolla-apps.png",
-                "icons/icon-launcher-jollacare.png",
-                "icons/icon-launcher-jollacom.png",
-                "icons/icon-launcher-jollacommunity.png",
-                "icons/icon-launcher-jollashop.png",
-                "icons/icon-launcher-lock.png",
-                "icons/icon-launcher-mad-developer.png",
-                "icons/icon-launcher-map.png",
-                "icons/icon-launcher-mediaplayer.png",
-                "icons/icon-launcher-messaging.png",
-                "icons/icon-launcher-navigation.png",
-                "icons/icon-launcher-notes.png",
-                "icons/icon-launcher-octoslush.png",
-                "icons/icon-launcher-office.png",
-                "icons/icon-launcher-package-manager.png",
-                "icons/icon-launcher-people.png",
-                "icons/icon-launcher-phone.png",
-                "icons/icon-launcher-qtodo.png",
-                "icons/icon-launcher-quick-feedback.png",
-                "icons/icon-launcher-sat.png",
-                "icons/icon-launcher-screenshot.png",
-                "icons/icon-launcher-search.png",
-                "icons/icon-launcher-settings.png",
-                "icons/icon-launcher-shell.png",
-                "icons/icon-launcher-store.png",
-                "icons/icon-launcher-system-update.png",
-                "icons/icon-launcher-todo.png",
-                "icons/icon-launcher-tutorial.png",
-                "icons/icon-launcher-utility.png",
-                "icons/icon-launcher-weather.png",
-                "icons/icon-launcher-wizard.png",
-                "icons/icon-store-app-default.png",
-                "icons/icons-Applications-filemanager.png",
-                "icons/instagram.png",
-                "icons/kibitiles.png",
-                "icons/mad-developer.png",
-                "icons/messenger.png",
-                "icons/mg-package-manager.png",
-                "icons/netflix.png",
-                "icons/numaze.png",
-                "icons/snapchat.png",
-                "icons/spotify.png",
-                "icons/telegram.png",
-                "icons/twitter.png",
-                "icons/whatsapp.png",
-                "icons/youtube.png",
+                "logos/discord.png",
+                "logos/facebook.png",
+                "logos/icon-launcher-accounts.png",
+                "logos/icon-launcher-android-support.png",
+                "logos/icon-launcher-bookmark.png",
+                "logos/icon-launcher-browser.png",
+                "logos/icon-launcher-calculator.png",
+                "logos/icon-launcher-calendar.png",
+                "logos/icon-launcher-camera.png",
+                "logos/icon-launcher-clock.png",
+                "logos/icon-launcher-component-gallery.png",
+                "logos/icon-launcher-default.png",
+                "logos/icon-launcher-dummy.png",
+                "logos/icon-launcher-email.png",
+                "logos/icon-launcher-file-manager.png",
+                "logos/icon-launcher-gallery.png",
+                "logos/icon-launcher-jolla-apps.png",
+                "logos/icon-launcher-jollacare.png",
+                "logos/icon-launcher-jollacom.png",
+                "logos/icon-launcher-jollacommunity.png",
+                "logos/icon-launcher-jollashop.png",
+                "logos/icon-launcher-lock.png",
+                "logos/icon-launcher-mad-developer.png",
+                "logos/icon-launcher-map.png",
+                "logos/icon-launcher-mediaplayer.png",
+                "logos/icon-launcher-messaging.png",
+                "logos/icon-launcher-navigation.png",
+                "logos/icon-launcher-notes.png",
+                "logos/icon-launcher-octoslush.png",
+                "logos/icon-launcher-office.png",
+                "logos/icon-launcher-package-manager.png",
+                "logos/icon-launcher-people.png",
+                "logos/icon-launcher-phone.png",
+                "logos/icon-launcher-qtodo.png",
+                "logos/icon-launcher-quick-feedback.png",
+                "logos/icon-launcher-sat.png",
+                "logos/icon-launcher-screenshot.png",
+                "logos/icon-launcher-search.png",
+                "logos/icon-launcher-settings.png",
+                "logos/icon-launcher-shell.png",
+                "logos/icon-launcher-store.png",
+                "logos/icon-launcher-system-update.png",
+                "logos/icon-launcher-todo.png",
+                "logos/icon-launcher-tutorial.png",
+                "logos/icon-launcher-utility.png",
+                "logos/icon-launcher-weather.png",
+                "logos/icon-launcher-wizard.png",
+                "logos/icon-store-app-default.png",
+                "logos/icons-Applications-filemanager.png",
+                "logos/instagram.png",
+                "logos/kibitiles.png",
+                "logos/mad-developer.png",
+                "logos/messenger.png",
+                "logos/mg-package-manager.png",
+                "logos/netflix.png",
+                "logos/numaze.png",
+                "logos/snapchat.png",
+                "logos/spotify.png",
+                "logos/telegram.png",
+                "logos/twitter.png",
+                "logos/whatsapp.png",
+                "logos/youtube.png",
                 "images/wallpaper.jpg",
                 "symbols/chevron.png",
                 "symbols/graphic-avatar-text-back.png",
