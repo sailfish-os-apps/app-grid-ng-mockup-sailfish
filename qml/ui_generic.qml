@@ -12,13 +12,6 @@ Window {
     maximumHeight: minimumHeight;
     visible: true;
 
-    Image {
-        source: "qrc:///images/wallpaper.jpg";
-        fillMode: Image.PreserveAspectCrop;
-        verticalAlignment: Image.AlignVCenter;
-        horizontalAlignment: Image.AlignHCenter;
-        anchors.fill: parent;
-    }
     AppGridNgMockup {
         anchors.fill: parent;
     }

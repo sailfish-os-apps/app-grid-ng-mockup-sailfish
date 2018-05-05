@@ -6,6 +6,7 @@ Item {
     height: 800;
 
     property bool shown : false;
+    property bool edit  : false;
 
     property string currentGroup : "";
 
@@ -14,6 +15,8 @@ Item {
     property color secondaryColor : Qt.rgba(1,1,1,0.5);
 
     property string fontName : "Ubuntu";
+
+    property string wallpaper : "qrc:///images/wallpaper.jpg";
 
     property int headerSize : 80;
 
@@ -27,14 +30,19 @@ Item {
 
     property real itemSize : (width / Math.floor (width / 135));
 
-    property QtObject tmp : null;
-
     function launchApp (label, icon) {
-        tmp = compoLaunchAnim.createObject (overlay, { "icon" : icon });
+        compoLaunchAnim.createObject (overlay, { "icon" : icon });
         currentGroup = "";
         shown = false;
     }
 
+    Image {
+        source: wallpaper;
+        fillMode: Image.PreserveAspectCrop;
+        verticalAlignment: Image.AlignVCenter;
+        horizontalAlignment: Image.AlignHCenter;
+        anchors.fill: parent;
+    }
     Item {
         id: statusbar;
         z: 99999;
@@ -143,7 +151,7 @@ Item {
             Behavior on anchors.bottomMargin { NumberAnimation { duration: 280; } }
             Rectangle {
                 color: "black";
-                opacity: 0.85;
+                opacity: 0.65;
                 anchors.fill: parent;
             }
             Flickable {
@@ -254,6 +262,7 @@ Item {
                                     right: parent.right;
                                 }
                                 onClicked: { currentGroup = (group.isCurrent ? "" : modelData ["group"]); }
+                                onPressAndHold: { edit = true; }
 
                                 Rectangle {
                                     color: accentColor;
@@ -264,6 +273,7 @@ Item {
                                     Behavior on opacity { NumberAnimation { duration: 280; } }
                                 }
                                 Row {
+                                    id: list;
                                     spacing: 24;
                                     anchors {
                                         left: parent.left;
@@ -272,6 +282,7 @@ Item {
                                     }
 
                                     Image {
+                                        id: chevron;
                                         source: "qrc:///symbols/chevron.png";
                                         opacity: 0.65;
                                         rotation: (!group.isCurrent ? -90 : 0);
@@ -281,7 +292,6 @@ Item {
                                     }
                                     Row {
                                         opacity: (!group.isCurrent ? 1.0 : 0.0);
-                                        visible: (opacity > 0.0);
                                         spacing: 16;
                                         anchors.verticalCenter: parent.verticalCenter;
 
@@ -289,7 +299,7 @@ Item {
                                         Repeater {
                                             model: modelData ["apps"].slice (0, 3);
                                             delegate: Image {
-                                                scale: opacity;
+                                                scale: (clicker.pressed ? 0.85 : 1.0);
                                                 source: "qrc:///logos/%1.png".arg (modelData ["icon"]);
                                                 smooth: true;
                                                 mipmap: true;
@@ -297,9 +307,12 @@ Item {
                                                 antialiasing: true;
                                                 anchors.verticalCenter: parent.verticalCenter;
 
+                                                Behavior on scale { NumberAnimation { duration: 150; } }
                                                 MouseArea {
+                                                    id: clicker;
                                                     anchors.fill: parent;
                                                     onClicked: { launchApp (modelData ["label"], modelData ["icon"]); }
+                                                    onPressAndHold: { edit = true; }
                                                 }
                                             }
                                         }
@@ -316,15 +329,20 @@ Item {
                                     }
                                 }
                                 Text {
-                                    id: lbl;
                                     text: modelData ["group"];
                                     color: accentColor;
+                                    elide: Text.ElideRight;
+                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere;
+                                    maximumLineCount: 2;
+                                    verticalAlignment: Text.AlignVCenter;
+                                    horizontalAlignment: Text.AlignRight;
                                     font {
                                         family: fontName;
-                                        pixelSize: fontSizeBig;
                                         weight: Font.Light;
+                                        pixelSize: (group.isCurrent ? fontSizeBig : fontSizeNormal);
                                     }
                                     anchors {
+                                        left: (group.isCurrent ? parent.left : list.right);
                                         right: parent.right;
                                         margins: 20;
                                         verticalCenter: parent.verticalCenter;
@@ -357,11 +375,13 @@ Item {
                                     Repeater {
                                         model: modelData ["apps"];
                                         delegate: MouseArea {
+                                            id: item;
                                             opacity: (group.isCurrent ? 1.0 : 0.0);
                                             visible: (opacity > 0.0);
                                             implicitWidth: itemSize;
                                             implicitHeight: itemSize;
                                             onClicked: { launchApp (modelData ["label"], modelData ["icon"]); }
+                                            onPressAndHold: { edit = true; }
 
                                             Behavior on opacity { NumberAnimation { duration: 280; } }
                                             Column {
@@ -369,6 +389,7 @@ Item {
                                                 anchors.centerIn: parent;
 
                                                 Image {
+                                                    scale: (item.pressed ? 0.85 : 1.0);
                                                     width: iconSizeBig.width;
                                                     height: iconSizeBig.height;
                                                     source: "qrc:///logos/%1.png".arg (modelData ["icon"]);
@@ -378,14 +399,16 @@ Item {
                                                     sourceSize: iconSizeBig;
                                                     antialiasing: true;
                                                     anchors.horizontalCenter: parent.horizontalCenter;
+
+                                                    Behavior on scale { NumberAnimation { duration: 150; } }
                                                 }
                                                 Text {
                                                     text: modelData ["label"];
                                                     color: secondaryColor;
                                                     font {
                                                         family: fontName;
-                                                        pixelSize: fontSizeSmall;
                                                         weight: Font.Light;
+                                                        pixelSize: fontSizeSmall;
                                                     }
                                                     anchors.horizontalCenter: parent.horizontalCenter;
                                                 }

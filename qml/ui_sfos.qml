@@ -6,15 +6,9 @@ ApplicationWindow {
     allowedOrientations: defaultAllowedOrientations;
     initialPage: Component {
         Page {
-            Image {
-                source: "qrc:///images/wallpaper.jpg";
-                fillMode: Image.PreserveAspectCrop;
-                verticalAlignment: Image.AlignVCenter;
-                horizontalAlignment: Image.AlignHCenter;
-                anchors.fill: parent;
-            }
             AppGridNgMockup {
                 itemSize: (Screen.width / 4);
+                wallpaper: Theme.backgroundImage;
                 headerSize: Theme.itemSizeLarge;
                 fontName: Theme.fontFamilyHeading;
                 fontSizeBig: Theme.fontSizeMedium;
