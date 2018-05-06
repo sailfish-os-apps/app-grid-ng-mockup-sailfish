@@ -652,5 +652,8 @@
         <file>symbols/icon-system-volume.png</file>
         <file>symbols/icon-system-warning.png</file>
         <file>symbols/icon-uninstall-app.png</file>
+        <file>qml/components/silica-proxy/RemorseItem.qml</file>
+        <file>qml/components/silica-fake/THIS FOLDER FAKES SILICA OBJECTS</file>
+        <file>qml/components/silica-proxy/THIS FOLDER WRAPS SILICA OBJECTS</file>
     </qresource>
 </RCC>

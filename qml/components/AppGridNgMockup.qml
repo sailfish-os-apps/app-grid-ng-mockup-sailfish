@@ -1,4 +1,6 @@
 import QtQuick 2.6;
+import "silica-proxy";
+import "silica-fake";
 
 Item {
     id: base;
@@ -75,11 +77,11 @@ Item {
     }
 
     function moveFolderUp (folderIdx) {
-        foldersModel.move (model.index, model.index -1, 1);
+        foldersModel.move (folderIdx, (folderIdx -1), 1);
     }
 
     function moveFolderDown (folderIdx) {
-        foldersModel.move (model.index, model.index +1, 1);
+        foldersModel.move (folderIdx, (folderIdx +1), 1);
     }
 
     function reorderIcons (srcFolderModel, srcPos, dstFolderModel, dstPos) {
@@ -154,18 +156,9 @@ Item {
             }
 
             Image {
-                source: (flag ? "qrc:///symbols/icon-status-data-download.png" : "qrc:///symbols/icon-status-data-upload.png");
+                source: "qrc:///symbols/icon-status-data-download.png";
                 sourceSize: iconSizeSmall;
                 anchors.verticalCenter: parent.verticalCenter;
-
-                property bool flag : false;
-
-                Timer {
-                    repeat: true;
-                    running: true;
-                    interval: 850;
-                    onTriggered: { parent.flag = !parent.flag; }
-                }
             }
             Text {
                 text: "4G+";
@@ -333,10 +326,22 @@ Item {
                             readonly property ListModel appsModel  : model ["apps"];
 
                             readonly property bool isDefault : (groupLabel === "");
-                            readonly property bool isCurrent : ((edit ? forceOpened : currentGroup === group) || isDefault);
+                            readonly property bool isCurrent : (currentGroup === group);
+                            readonly property bool isOpened  : ((edit ? forceOpened : isCurrent) || isDefault);
 
                             property bool forceOpened : false;
 
+                            Connections {
+                                target: base;
+                                onEditChanged: {
+                                    if (edit) {
+                                        group.forceOpened = group.isCurrent;
+                                    }
+                                    else {
+                                        group.forceOpened = false;
+                                    }
+                                }
+                            }
                             MouseArea {
                                 id: header;
                                 visible: !group.isDefault;
@@ -357,7 +362,7 @@ Item {
 
                                 Rectangle {
                                     color: accentColor;
-                                    opacity: (parent.pressed || group.isCurrent ? 0.35 : 0.0);
+                                    opacity: (parent.pressed || group.isOpened ? 0.35 : 0.0);
                                     visible: (!edit && opacity > 0.0);
                                     anchors.fill: parent;
 
@@ -376,13 +381,13 @@ Item {
                                         id: chevron;
                                         source: "qrc:///symbols/chevron.png";
                                         opacity: 0.65;
-                                        rotation: (!group.isCurrent ? -90 : 0);
+                                        rotation: (!group.isOpened ? -90 : 0);
                                         anchors.verticalCenter: parent.verticalCenter;
 
                                         Behavior on rotation { NumberAnimation { duration: 280; } }
                                     }
                                     Row {
-                                        opacity: (!group.isCurrent ? 1.0 : 0.0);
+                                        opacity: (!group.isOpened ? 1.0 : 0.0);
                                         visible: !edit;
                                         spacing: 16;
                                         enabled: !edit;
@@ -416,7 +421,9 @@ Item {
                                             }
                                         }
                                         Text {
-                                            text: (group.appsModel.count > 3 ? "+%1".arg (group.appsModel.count -3) : "");
+                                            text: (group.appsModel && group.appsModel.count > 3
+                                                   ? "+%1".arg (group.appsModel.count -3)
+                                                   : "");
                                             color: secondaryColor;
                                             opacity: (edit ? 0.35 : 1.0);
                                             font {
@@ -441,10 +448,10 @@ Item {
                                     font {
                                         family: fontName;
                                         weight: Font.Light;
-                                        pixelSize: (group.isCurrent ? fontSizeBig : fontSizeNormal);
+                                        pixelSize: (group.isOpened ? fontSizeBig : fontSizeNormal);
                                     }
                                     anchors {
-                                        left: (group.isCurrent ? parent.left : list.right);
+                                        left: (group.isOpened ? parent.left : list.right);
                                         right: parent.right;
                                         margins: 20;
                                         verticalCenter: parent.verticalCenter;
@@ -547,7 +554,12 @@ Item {
                                         opacity: (enabled ? 1.0 : 0.15);
                                         implicitWidth: iconSizeNormal.width;
                                         implicitHeight: iconSizeNormal.height;
-                                        onClicked: { removeFolder (model.index); }
+                                        onClicked: {
+                                            remorse.execute (placeholder,
+                                                             qsTr ("Removing folder...\n(icons inside will be set out)"),
+                                                             (function () { removeFolder (model.index); }),
+                                                             3000);
+                                        }
 
                                         Rectangle {
                                             color: "red";
@@ -567,6 +579,18 @@ Item {
                                         }
                                     }
                                 }
+                                Rectangle {
+                                    id: dimmer;
+                                    color: "black";
+                                    opacity: (remorse.pending ? 0.85 : 0.0);
+                                    anchors.fill: parent;
+                                }
+                                Item {
+                                    id: placeholder;
+                                    anchors.fill: parent;
+
+                                    RemorseItem { id: remorse; }
+                                }
                             }
                             Item {
                                 clip: (height < flow.height);
@@ -585,7 +609,7 @@ Item {
                                 Behavior on height { NumberAnimation { easing.type: Easing.InOutCirc; duration: 280; } }
                                 Flow {
                                     id: flow;
-                                    visible: group.isCurrent;
+                                    visible: group.isOpened;
                                     spacing: 0;
                                     anchors {
                                         left: parent.left;
@@ -596,7 +620,7 @@ Item {
                                         model: group.appsModel;
                                         delegate: MouseArea {
                                             id: item;
-                                            opacity: (group.isCurrent ? 1.0 : 0.0);
+                                            opacity: (group.isOpened ? 1.0 : 0.0);
                                             visible: (opacity > 0.0);
                                             implicitWidth: itemSize;
                                             implicitHeight: itemSize;
@@ -661,7 +685,6 @@ Item {
                                                 Text {
                                                     text: item.label;
                                                     color: secondaryColor;
-                                                    opacity: (edit ? 0.35 : 1.0);
                                                     font {
                                                         family: fontName;
                                                         weight: Font.Light;
