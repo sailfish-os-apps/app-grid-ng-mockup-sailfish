@@ -47,11 +47,17 @@ Item {
     }
 
     function leaveEditMode () {
-        edit = false;
+        if (foldersModel.get (foldersModel.count -1) ["apps"].count > 0) {
+            compoUninstallConfirmPopup.createObject (base, { });
+        }
+        else {
+            edit = false;
+        }
     }
 
     function createFolder () {
-        foldersModel.append ({
+        foldersModel.insert ((foldersModel.count -1),
+                             {
                                  "group" : qsTr ("New folder"),
                                  "apps"  : []
                              });
@@ -314,9 +320,14 @@ Item {
                                     ListElement { icon: "numaze";    label: "Numaze"    }
                                 ]
                             }
+                            ListElement {
+                                group: "!UNINSTALL";
+                                apps: []
+                            }
                         }
                         delegate: Column {
                             id: group;
+                            visible: (!isTrash || edit);
                             anchors {
                                 left: parent.left;
                                 right: parent.right;
@@ -326,8 +337,9 @@ Item {
                             readonly property ListModel appsModel  : model ["apps"];
 
                             readonly property bool isDefault : (groupLabel === "");
+                            readonly property bool isTrash   : (groupLabel === "!UNINSTALL");
                             readonly property bool isCurrent : (currentGroup === group);
-                            readonly property bool isOpened  : ((edit ? forceOpened : isCurrent) || isDefault);
+                            readonly property bool isOpened  : ((edit ? forceOpened : isCurrent) || isDefault || isTrash);
 
                             property bool forceOpened : false;
 
@@ -368,28 +380,31 @@ Item {
 
                                     Behavior on opacity { NumberAnimation { duration: 280; } }
                                 }
-                                Row {
-                                    id: list;
-                                    spacing: 24;
+                                Image {
+                                    id: chevron;
+                                    source: "qrc:///symbols/chevron.png";
+                                    opacity: 0.65;
+                                    rotation: (!group.isOpened ? -90 : 0);
                                     anchors {
                                         left: parent.left;
                                         margins: 16;
                                         verticalCenter: parent.verticalCenter;
                                     }
 
-                                    Image {
-                                        id: chevron;
-                                        source: "qrc:///symbols/chevron.png";
-                                        opacity: 0.65;
-                                        rotation: (!group.isOpened ? -90 : 0);
-                                        anchors.verticalCenter: parent.verticalCenter;
-
-                                        Behavior on rotation { NumberAnimation { duration: 280; } }
+                                    Behavior on rotation { NumberAnimation { duration: 280; } }
+                                }
+                                Row {
+                                    id: list;
+                                    anchors {
+                                        left: chevron.right;
+                                        margins: 20;
+                                        verticalCenter: parent.verticalCenter;
                                     }
+
                                     Row {
+                                        spacing: 16;
                                         opacity: (!group.isOpened ? 1.0 : 0.0);
                                         visible: !edit;
-                                        spacing: 16;
                                         enabled: !edit;
                                         anchors.verticalCenter: parent.verticalCenter;
 
@@ -434,13 +449,94 @@ Item {
                                             anchors.bottom: parent.bottom;
                                         }
                                     }
+                                    Row {
+                                        spacing: 8;
+                                        visible: (edit && !group.isTrash);
+                                        anchors.verticalCenter: parent.verticalCenter;
+
+                                        MouseArea {
+                                            enabled: (model.index > 1);
+                                            opacity: (enabled ? 1.0 : 0.15);
+                                            implicitWidth: iconSizeNormal.width;
+                                            implicitHeight: iconSizeNormal.height;
+                                            onClicked: { moveFolderUp (model.index); }
+
+                                            Rectangle {
+                                                color: "black";
+                                                radius: 7;
+                                                opacity: (parent.pressed ? 0.15 : 0.35);
+                                                antialiasing: true;
+                                                anchors.fill: parent;
+                                            }
+                                            Image {
+                                                source: "qrc:///symbols/icon-m-page-up.png";
+                                                smooth: true;
+                                                mipmap: true;
+                                                fillMode: Image.Stretch;
+                                                sourceSize: iconSizeNormal;
+                                                antialiasing: true;
+                                                anchors.fill: parent;
+                                            }
+                                        }
+                                        MouseArea {
+                                            enabled: (model.index < foldersModel.count -2);
+                                            opacity: (enabled ? 1.0 : 0.15);
+                                            implicitWidth: iconSizeNormal.width;
+                                            implicitHeight: iconSizeNormal.height;
+                                            onClicked: { moveFolderDown (model.index); }
+
+                                            Rectangle {
+                                                color: "black";
+                                                radius: 7;
+                                                opacity: (parent.pressed ? 0.15 : 0.35);
+                                                antialiasing: true;
+                                                anchors.fill: parent;
+                                            }
+                                            Image {
+                                                source: "qrc:///symbols/icon-m-page-down.png";
+                                                smooth: true;
+                                                mipmap: true;
+                                                fillMode: Image.Stretch;
+                                                sourceSize: iconSizeNormal;
+                                                antialiasing: true;
+                                                anchors.fill: parent;
+                                            }
+                                        }
+                                        MouseArea {
+                                            opacity: (enabled ? 1.0 : 0.15);
+                                            implicitWidth: iconSizeNormal.width;
+                                            implicitHeight: iconSizeNormal.height;
+                                            onClicked: {
+                                                remorse.execute (placeholder,
+                                                                 qsTr ("Removing folder...\n(icons inside will be set out)"),
+                                                                 (function () { removeFolder (model.index); }),
+                                                                 3000);
+                                            }
+
+                                            Rectangle {
+                                                color: "red";
+                                                radius: 7;
+                                                opacity: (parent.pressed ? 0.15 : 0.35);
+                                                antialiasing: true;
+                                                anchors.fill: parent;
+                                            }
+                                            Image {
+                                                source: "qrc:///symbols/icon-m-delete.png";
+                                                smooth: true;
+                                                mipmap: true;
+                                                fillMode: Image.Stretch;
+                                                sourceSize: iconSizeNormal;
+                                                antialiasing: true;
+                                                anchors.fill: parent;
+                                            }
+                                        }
+                                    }
                                 }
                                 Text {
                                     text: group.groupLabel;
                                     color: accentColor;
                                     elide: Text.ElideRight;
                                     visible: !edit;
-                                    opacity: (edit ? 0.35 : 1.0);
                                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere;
                                     maximumLineCount: 2;
                                     verticalAlignment: Text.AlignVCenter;
@@ -451,7 +547,7 @@ Item {
                                         pixelSize: (group.isOpened ? fontSizeBig : fontSizeNormal);
                                     }
                                     anchors {
-                                        left: (group.isOpened ? parent.left : list.right);
+                                        left: list.right;
                                         right: parent.right;
                                         margins: 20;
                                         verticalCenter: parent.verticalCenter;
@@ -459,12 +555,12 @@ Item {
                                 }
                                 TextInput {
                                     color: accentColor;
-                                    visible: edit;
+                                    visible: (edit && !group.isTrash);
                                     selectionColor: primaryColor;
                                     selectedTextColor: accentColor;
                                     verticalAlignment: Text.AlignVCenter;
                                     activeFocusOnPress: true;
-                                    horizontalAlignment: Text.AlignHCenter;
+                                    horizontalAlignment: Text.AlignRight;
                                     font {
                                         family: fontName;
                                         weight: Font.Light;
@@ -472,8 +568,8 @@ Item {
                                     }
                                     anchors {
                                         left: list.right;
-                                        right: buttons.left;
-                                        margins: 16;
+                                        right: parent.right;
+                                        margins: 20;
                                         verticalCenter: parent.verticalCenter;
                                     }
                                     onEditingFinished: {
@@ -484,6 +580,7 @@ Item {
                                     Binding on text { value: group.groupLabel; }
                                     Rectangle {
                                         color: accentColor;
+                                        visible: parent.activeFocus;
                                         implicitHeight: 1;
                                         anchors {
                                             top: parent.bottom;
@@ -493,89 +590,30 @@ Item {
                                     }
                                 }
                                 Row {
-                                    id: buttons;
-                                    visible: edit;
                                     spacing: 8;
+                                    visible: (edit && group.isTrash);
                                     anchors {
                                         right: parent.right;
-                                        margins: 16;
+                                        margins: 20;
                                         verticalCenter: parent.verticalCenter;
                                     }
 
-                                    MouseArea {
-                                        enabled: (model.index > 1);
-                                        opacity: (enabled ? 1.0 : 0.15);
-                                        implicitWidth: iconSizeNormal.width;
-                                        implicitHeight: iconSizeNormal.height;
-                                        onClicked: { moveFolderUp (model.index); }
-
-                                        Rectangle {
-                                            color: "black";
-                                            radius: 7;
-                                            opacity: (parent.pressed ? 0.15 : 0.35);
-                                            antialiasing: true;
-                                            anchors.fill: parent;
-                                        }
-                                        Image {
-                                            source: "qrc:///symbols/icon-m-page-up.png";
-                                            smooth: true;
-                                            mipmap: true;
-                                            fillMode: Image.Stretch;
-                                            sourceSize: iconSizeNormal;
-                                            antialiasing: true;
-                                            anchors.fill: parent;
+                                    Text {
+                                        text: qsTr ("To be uninstalled");
+                                        color: "red";
+                                        font {
+                                            family: fontName;
+                                            weight: Font.Normal;
+                                            pixelSize: fontSizeBig;
                                         }
                                     }
-                                    MouseArea {
-                                        enabled: (model.index < foldersModel.count -1);
-                                        opacity: (enabled ? 1.0 : 0.15);
-                                        implicitWidth: iconSizeNormal.width;
-                                        implicitHeight: iconSizeNormal.height;
-                                        onClicked: { moveFolderDown (model.index); }
-
-                                        Rectangle {
-                                            color: "black";
-                                            radius: 7;
-                                            opacity: (parent.pressed ? 0.15 : 0.35);
-                                            antialiasing: true;
-                                            anchors.fill: parent;
-                                        }
-                                        Image {
-                                            source: "qrc:///symbols/icon-m-page-down.png";
-                                            smooth: true;
-                                            mipmap: true;
-                                            fillMode: Image.Stretch;
-                                            sourceSize: iconSizeNormal;
-                                            antialiasing: true;
-                                            anchors.fill: parent;
-                                        }
-                                    }
-                                    MouseArea {
-                                        opacity: (enabled ? 1.0 : 0.15);
-                                        implicitWidth: iconSizeNormal.width;
-                                        implicitHeight: iconSizeNormal.height;
-                                        onClicked: {
-                                            remorse.execute (placeholder,
-                                                             qsTr ("Removing folder...\n(icons inside will be set out)"),
-                                                             (function () { removeFolder (model.index); }),
-                                                             3000);
-                                        }
-
-                                        Rectangle {
-                                            color: "red";
-                                            radius: 7;
-                                            opacity: (parent.pressed ? 0.15 : 0.35);
-                                            antialiasing: true;
-                                            anchors.fill: parent;
-                                        }
-                                        Image {
-                                            source: "qrc:///symbols/icon-m-delete.png";
-                                            smooth: true;
-                                            mipmap: true;
-                                            fillMode: Image.Stretch;
-                                            sourceSize: iconSizeNormal;
-                                            antialiasing: true;
-                                            anchors.fill: parent;
+                                    Text {
+                                        text: "(%1)".arg (group.appsModel.count);
+                                        color: "red";
+                                        font {
+                                            family: fontName;
+                                            weight: Font.Bold;
+                                            pixelSize: fontSizeBig;
                                         }
                                     }
                                 }
@@ -631,11 +669,11 @@ Item {
                                                 }
                                             }
                                             onPressAndHold: {
-                                                if (!edit) {
-                                                    enterEditMode ();
+                                                if (edit) {
+                                                    currentMovingIcon = item;
                                                 }
                                                 else {
-                                                    currentMovingIcon = item;
+                                                    enterEditMode ();
                                                 }
                                             }
                                             onReleased: {
@@ -722,7 +760,11 @@ Item {
                                     Item {
                                         visible: edit;
                                         implicitWidth: itemSize;
-                                        implicitHeight: itemSize;
+                                        implicitHeight: (group.appsModel
+                                                         ? ((group.appsModel.count % divisions !== 0)
+                                                            ? itemSize
+                                                            : (itemSize / 2))
+                                                         : 0);
 
                                         DropArea {
                                             id: dropperLast;
@@ -899,6 +941,141 @@ Item {
                 }
                 ScriptAction {
                     script: { throbber.destroy (); }
+                }
+            }
+        }
+    }
+    Component {
+        id: compoUninstallConfirmPopup;
+
+        MouseArea {
+            id: popup;
+            anchors.fill: parent;
+            onWheel: { }
+            onPressed: { }
+            onReleased: { }
+
+            Rectangle {
+                color: "black";
+                opacity: 0.85;
+                anchors.fill: parent;
+            }
+            Column {
+                spacing: 16;
+                anchors.centerIn: parent;
+
+                Text {
+                    id: msg;
+                    text: qsTr ("The following apps\nare going to be uninstalled");
+                    color: accentColor;
+                    horizontalAlignment: Text.AlignHCenter;
+                    font {
+                        family: fontName;
+                        weight: Font.Light;
+                        pixelSize: fontSizeBig;
+                    }
+                    anchors.horizontalCenter: parent.horizontalCenter;
+                }
+                Rectangle {
+                    color: accentColor;
+                    implicitWidth: Math.max (msg.width, view.width);
+                    implicitHeight: 1;
+                    anchors.horizontalCenter: parent.horizontalCenter;
+                }
+                Column {
+                    id: view;
+                    spacing: 12;
+                    anchors.horizontalCenter: parent.horizontalCenter;
+
+                    Repeater {
+                        model: foldersModel.get (foldersModel.count -1) ["apps"];
+                        delegate: Row {
+                            spacing: 16;
+
+                            Image {
+                                width: iconSizeNormal.width;
+                                height: iconSizeNormal.height;
+                                source: "qrc:///logos/%1.png".arg (model ["icon"]);
+                                smooth: true;
+                                mipmap: true;
+                                fillMode: Image.Stretch;
+                                sourceSize: iconSizeNormal;
+                                antialiasing: true;
+                                anchors.verticalCenter: parent.verticalCenter;
+                            }
+                            Text {
+                                text: model ["label"];
+                                color: secondaryColor;
+                                font {
+                                    family: fontName;
+                                    weight: Font.Light;
+                                    pixelSize: fontSizeNormal;
+                                }
+                                anchors.verticalCenter: parent.verticalCenter;
+                            }
+                        }
+                    }
+                }
+                Rectangle {
+                    color: accentColor;
+                    implicitWidth: Math.max (msg.width, view.width);
+                    implicitHeight: 1;
+                    anchors.horizontalCenter: parent.horizontalCenter;
+                }
+                Row {
+                    spacing: 12;
+                    anchors.horizontalCenter: parent.horizontalCenter;
+
+                    MouseArea {
+                        implicitWidth: (iconSizeNormal.width * 3);
+                        implicitHeight: iconSizeNormal.height;
+                        onClicked: { popup.destroy (); }
+
+                        Rectangle {
+                            color: "white";
+                            radius: 7;
+                            opacity: 0.35;
+                            antialiasing: true;
+                            anchors.fill: parent;
+                        }
+                        Text {
+                            text: qsTr ("Cancel");
+                            color: primaryColor;
+                            font {
+                                family: fontName;
+                                weight: Font.Light;
+                                pixelSize: fontSizeNormal;
+                            }
+                            anchors.centerIn: parent;
+                        }
+                    }
+                    MouseArea {
+                        implicitWidth: (iconSizeNormal.width * 3);
+                        implicitHeight: iconSizeNormal.height;
+                        onClicked: {
+                            foldersModel.get (foldersModel.count -1) ["apps"].clear ();
+                            edit = false;
+                            popup.destroy ();
+                        }
+
+                        Rectangle {
+                            color: "white";
+                            radius: 7;
+                            opacity: 0.35;
+                            antialiasing: true;
+                            anchors.fill: parent;
+                        }
+                        Text {
+                            text: qsTr ("Apply");
+                            color: primaryColor;
+                            font {
+                                family: fontName;
+                                weight: Font.Light;
+                                pixelSize: fontSizeNormal;
+                            }
+                            anchors.centerIn: parent;
+                        }
+                    }
                 }
             }
         }
