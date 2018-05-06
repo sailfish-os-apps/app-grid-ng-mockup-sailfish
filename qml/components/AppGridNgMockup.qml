@@ -8,11 +8,12 @@ Item {
     property bool shown : false;
     property bool edit  : false;
 
-    property string currentGroup : "";
+    property QtObject currentGroup : null;
+    property QtObject currentIcon  : null;
 
     property color accentColor    : Qt.lighter ("steelblue");
     property color primaryColor   : "white";
-    property color secondaryColor : Qt.rgba(1,1,1,0.5);
+    property color secondaryColor : Qt.rgba (1, 1, 1, 0.5);
 
     property string fontName : "Ubuntu";
 
@@ -28,11 +29,13 @@ Item {
     property size iconSizeNormal : Qt.size (48, 48);
     property size iconSizeSmall  : Qt.size (20, 20);
 
-    property real itemSize : (width / Math.floor (width / 135));
+    property real itemSize : (width / divisions);
+
+    property int divisions : 4;
 
     function launchApp (label, icon) {
-        compoLaunchAnim.createObject (overlay, { "icon" : icon });
-        currentGroup = "";
+        compoLaunchAnim.createObject (overlay, { icon: icon });
+        currentGroup = null;
         shown = false;
     }
 
@@ -177,11 +180,12 @@ Item {
                 contentHeight: layout.height;
                 flickableDirection: Flickable.VerticalFlick;
                 anchors {
-                    topMargin: statusbar.height;
                     fill: parent;
+                    topMargin: statusbar.height;
+                    bottomMargin: (edit ? toolbar.height : 0);
                 }
                 onContentYChanged: {
-                    if (contentY < -280) {
+                    if (contentY < -280 && !edit) {
                         shown = false;
                     }
                 }
@@ -194,73 +198,75 @@ Item {
                     }
 
                     Repeater {
-                        model: [
-                            {
-                                "group" : "",
-                                "apps": [
-                                    { "icon" : "icon-launcher-browser", "label" : "Web Browser" },
-                                    { "icon" : "icon-launcher-people",  "label" : "Contacts" },
-                                    { "icon" : "icon-launcher-map",     "label" : "Maps" },
-                                    { "icon" : "icon-launcher-weather", "label" : "Weather" },
+                        model: ListModel {
+                            id: foldersModel;
+
+                            ListElement {
+                                group: "";
+                                apps: [
+                                    ListElement { icon: "icon-launcher-browser"; label: "Web Browser" },
+                                    ListElement { icon: "icon-launcher-people";  label: "Contacts"    },
+                                    ListElement { icon: "icon-launcher-map";     label: "Maps"        },
+                                    ListElement { icon: "icon-launcher-weather"; label: "Weather"     }
                                 ]
-                            },
-                            {
-                                "group" : "Communication",
-                                "apps": [
-                                    { "icon" : "icon-launcher-phone",          "label" : "Phone" },
-                                    { "icon" : "icon-launcher-messaging",      "label" : "Messages" },
-                                    { "icon" : "icon-launcher-email",          "label" : "Email" },
-                                    { "icon" : "telegram",                     "label" : "Telegram" },
-                                    { "icon" : "whatsapp",                     "label" : "Whatsapp" },
-                                    { "icon" : "snapchat",                     "label" : "Snapchat" },
-                                    { "icon" : "facebook",                     "label" : "Facebook" },
-                                    { "icon" : "messenger",                    "label" : "Messenger" },
-                                    { "icon" : "twitter",                      "label" : "Twitter" },
-                                    { "icon" : "instagram",                    "label" : "Instagram" },
-                                    { "icon" : "discord",                      "label" : "Discord" },
+                            }
+                            ListElement {
+                                group: "Communication";
+                                apps: [
+                                    ListElement { icon: "icon-launcher-phone";          label: "Phone"     },
+                                    ListElement { icon: "icon-launcher-messaging";      label: "Messages"  },
+                                    ListElement { icon: "icon-launcher-email";          label: "Email"     },
+                                    ListElement { icon: "telegram";                     label: "Telegram"  },
+                                    ListElement { icon: "whatsapp";                     label: "Whatsapp"  },
+                                    ListElement { icon: "snapchat";                     label: "Snapchat"  },
+                                    ListElement { icon: "facebook";                     label: "Facebook"  },
+                                    ListElement { icon: "messenger";                    label: "Messenger" },
+                                    ListElement { icon: "twitter";                      label: "Twitter"   },
+                                    ListElement { icon: "instagram";                    label: "Instagram" },
+                                    ListElement { icon: "discord";                      label: "Discord"   }
                                 ]
-                            },
-                            {
-                                "group" : "Multimedia",
-                                "apps": [
-                                    { "icon" : "icon-launcher-camera",      "label" : "Camera" },
-                                    { "icon" : "icon-launcher-gallery",     "label" : "Gallery" },
-                                    { "icon" : "icon-launcher-mediaplayer", "label" : "Music" },
-                                    { "icon" : "youtube",                   "label" : "Youtube" },
-                                    { "icon" : "netflix",                   "label" : "Netflix" },
-                                    { "icon" : "spotify",                   "label" : "Spotify" },
+                            }
+                            ListElement {
+                                group: "Multimedia";
+                                apps: [
+                                    ListElement { icon: "icon-launcher-camera";      label: "Camera"  },
+                                    ListElement { icon: "icon-launcher-gallery";     label: "Gallery" },
+                                    ListElement { icon: "icon-launcher-mediaplayer"; label: "Music"   },
+                                    ListElement { icon: "youtube";                   label: "Youtube" },
+                                    ListElement { icon: "netflix";                   label: "Netflix" },
+                                    ListElement { icon: "spotify";                   label: "Spotify" }
                                 ]
-                            },
-                            {
-                                "group" : "Productivity",
-                                "apps": [
-                                    { "icon" : "icon-launcher-notes",      "label" : "Notes" },
-                                    { "icon" : "icon-launcher-office",     "label" : "Office" },
-                                    { "icon" : "icon-launcher-qtodo",      "label" : "Todo" },
-                                    { "icon" : "icon-launcher-calendar",   "label" : "Calendar" },
-                                    { "icon" : "icon-launcher-calculator", "label" : "Calculator" },
+                            }
+                            ListElement {
+                                group: "Productivity";
+                                apps: [
+                                    ListElement { icon: "icon-launcher-notes";      label: "Notes"      },
+                                    ListElement { icon: "icon-launcher-office";     label: "Office"     },
+                                    ListElement { icon: "icon-launcher-qtodo";      label: "Todo"       },
+                                    ListElement { icon: "icon-launcher-calendar";   label: "Calendar"   },
+                                    ListElement { icon: "icon-launcher-calculator"; label: "Calculator" }
                                 ]
-                            },
-                            {
-                                "group" : "System Tools",
-                                "apps": [
-                                    { "icon" : "icon-launcher-jollashop",    "label" : "Store" },
-                                    { "icon" : "icon-launcher-file-manager", "label" : "Files" },
-                                    { "icon" : "icon-launcher-settings",     "label" : "Settings" },
-                                    { "icon" : "icon-launcher-search",       "label" : "Search" },
-                                    { "icon" : "icon-launcher-lock",         "label" : "Secure Vault" },
-                                    { "icon" : "icon-launcher-sat",          "label" : "SIM Tools" },
-                                    { "icon" : "icon-launcher-shell",        "label" : "Terminal" },
+                            }
+                            ListElement {
+                                group: "System Tools";
+                                apps: [
+                                    ListElement { icon: "icon-launcher-jollashop";    label: "Store"        },
+                                    ListElement { icon: "icon-launcher-file-manager"; label: "Files"        },
+                                    ListElement { icon: "icon-launcher-settings";     label: "Settings"     },
+                                    ListElement { icon: "icon-launcher-search";       label: "Search"       },
+                                    ListElement { icon: "icon-launcher-lock";         label: "Secure Vault" },
+                                    ListElement { icon: "icon-launcher-sat";          label: "SIM Tools"    },
+                                    ListElement { icon: "icon-launcher-shell";        label: "Terminal"     }
                                 ]
-                            },
-                            {
-                                "group" : "Games",
-                                "apps": [
-                                    { "icon" : "kibitiles", "label" : "Kibitiles" },
-                                    { "icon" : "numaze",    "label" : "Numaze" },
+                            }
+                            ListElement {
+                                group: "Games";
+                                apps: [
+                                    ListElement { icon: "kibitiles"; label: "Kibitiles" },
+                                    ListElement { icon: "numaze";    label: "Numaze"    }
                                 ]
-                            },
-                        ];
+                            }
+                        }
                         delegate: Column {
                             id: group;
                             anchors {
@@ -268,8 +274,11 @@ Item {
                                 right: parent.right;
                             }
 
-                            readonly property bool isDefault : (modelData ["group"] === "");
-                            readonly property bool isCurrent : (currentGroup === modelData ["group"] || isDefault);
+                            readonly property string    groupLabel : model ["group"];
+                            readonly property ListModel appsModel  : model ["apps"];
+
+                            readonly property bool isDefault : (groupLabel === "");
+                            readonly property bool isCurrent : (currentGroup === group || isDefault);
 
                             MouseArea {
                                 id: header;
@@ -279,13 +288,13 @@ Item {
                                     left: parent.left;
                                     right: parent.right;
                                 }
-                                onClicked: { currentGroup = (group.isCurrent ? "" : modelData ["group"]); }
+                                onClicked: { currentGroup = (group.isCurrent ? null : group); }
                                 onPressAndHold: { edit = true; }
 
                                 Rectangle {
                                     color: accentColor;
                                     opacity: (parent.pressed || group.isCurrent ? 0.35 : 0.0);
-                                    visible: (opacity > 0.0);
+                                    visible: (!edit && opacity > 0.0);
                                     anchors.fill: parent;
 
                                     Behavior on opacity { NumberAnimation { duration: 280; } }
@@ -315,28 +324,34 @@ Item {
 
                                         Behavior on opacity { NumberAnimation { duration: 280; } }
                                         Repeater {
-                                            model: modelData ["apps"].slice (0, 3);
+                                            model: Math.min (group.appsModel.count, 3);
                                             delegate: Image {
+                                                id: itemMini;
                                                 scale: (clicker.pressed ? 0.85 : 1.0);
-                                                source: "qrc:///logos/%1.png".arg (modelData ["icon"]);
+                                                source: "qrc:///logos/%1.png".arg (icon);
                                                 smooth: true;
                                                 mipmap: true;
+                                                opacity: (edit ? 0.35 : 1.0);
                                                 sourceSize: iconSizeNormal;
                                                 antialiasing: true;
                                                 anchors.verticalCenter: parent.verticalCenter;
+
+                                                readonly property string icon  : group.appsModel.get (model.index) ["icon"];
+                                                readonly property string label : group.appsModel.get (model.index) ["label"];
 
                                                 Behavior on scale { NumberAnimation { duration: 150; } }
                                                 MouseArea {
                                                     id: clicker;
                                                     anchors.fill: parent;
-                                                    onClicked: { launchApp (modelData ["label"], modelData ["icon"]); }
+                                                    onClicked: { launchApp (itemMini.label, itemMini.icon); }
                                                     onPressAndHold: { edit = true; }
                                                 }
                                             }
                                         }
                                         Text {
-                                            text: (modelData ["apps"].length > 3 ? "+%1".arg (modelData ["apps"].length -3) : "");
+                                            text: (group.appsModel.count > 3 ? "+%1".arg (group.appsModel.count -3) : "");
                                             color: secondaryColor;
+                                            opacity: (edit ? 0.35 : 1.0);
                                             font {
                                                 family: fontName;
                                                 weight: Font.Light;
@@ -347,9 +362,11 @@ Item {
                                     }
                                 }
                                 Text {
-                                    text: modelData ["group"];
+                                    text: group.groupLabel;
                                     color: accentColor;
                                     elide: Text.ElideRight;
+                                    visible: !edit;
+                                    opacity: (edit ? 0.35 : 1.0);
                                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere;
                                     maximumLineCount: 2;
                                     verticalAlignment: Text.AlignVCenter;
@@ -366,9 +383,42 @@ Item {
                                         verticalCenter: parent.verticalCenter;
                                     }
                                 }
+                                TextInput {
+                                    color: accentColor;
+                                    visible: edit;
+                                    selectionColor: primaryColor;
+                                    selectedTextColor: accentColor;
+                                    verticalAlignment: Text.AlignVCenter;
+                                    activeFocusOnPress: true;
+                                    horizontalAlignment: Text.AlignRight;
+                                    font {
+                                        family: fontName;
+                                        weight: Font.Light;
+                                        pixelSize: (group.isCurrent ? fontSizeBig : fontSizeNormal);
+                                    }
+                                    anchors {
+                                        left: (group.isCurrent ? parent.left : list.right);
+                                        right: parent.right;
+                                        leftMargin: (group.isCurrent ? 60 : 20);
+                                        rightMargin: 20;
+                                        verticalCenter: parent.verticalCenter;
+                                    }
+                                    onEditingFinished: { group.groupLabel = text; }
+
+                                    Binding on text { value: group.groupLabel; }
+                                    Rectangle {
+                                        color: accentColor;
+                                        implicitHeight: 1;
+                                        anchors {
+                                            top: parent.bottom;
+                                            left: parent.left;
+                                            right: parent.right;
+                                        }
+                                    }
+                                }
                             }
                             Item {
-                                clip: true;
+                                clip: (height < flow.height);
                                 height: (flow.visible ? flow.height : 0);
                                 anchors {
                                     left: parent.left;
@@ -378,6 +428,7 @@ Item {
                                 Rectangle {
                                     color: (group.isDefault ? primaryColor : accentColor);
                                     opacity: (group.isDefault ? 0.10 : 0.15);
+                                    visible: !edit;
                                     anchors.fill: parent;
                                 }
                                 Behavior on height { NumberAnimation { easing.type: Easing.InOutCirc; duration: 280; } }
@@ -391,28 +442,71 @@ Item {
                                     }
 
                                     Repeater {
-                                        model: modelData ["apps"];
+                                        model: group.appsModel;
                                         delegate: MouseArea {
                                             id: item;
                                             opacity: (group.isCurrent ? 1.0 : 0.0);
                                             visible: (opacity > 0.0);
                                             implicitWidth: itemSize;
                                             implicitHeight: itemSize;
-                                            onClicked: { launchApp (modelData ["label"], modelData ["icon"]); }
-                                            onPressAndHold: { edit = true; }
+                                            drag {
+                                                target: (currentIcon === item ? col : null);
+                                            }
+                                            onClicked: {
+                                                if (!edit) {
+                                                    launchApp (item.label, item.icon);
+                                                }
+                                            }
+                                            onPressAndHold: {
+                                                if (!edit) {
+                                                    edit = true;
+                                                }
+                                                else {
+                                                    currentIcon = item;
+                                                }
+                                            }
+                                            onReleased: {
+                                                //if (col.Drag.target) {
+                                                //    console.log ("RELEASED UPON", col.Drag.target);
+                                                //}
+                                                if (currentIcon === item) {
+                                                    currentIcon = null;
+                                                }
+                                            }
+
+                                            readonly property int    position : model.index;
+                                            readonly property string icon     : model ["icon"];
+                                            readonly property string label    : model ["label"];
 
                                             Behavior on opacity { NumberAnimation { duration: 280; } }
+                                            Rectangle {
+                                                color: "transparent";
+                                                visible: edit;
+                                                opacity: 0.35;
+                                                border {
+                                                    width: 1;
+                                                    color: secondaryColor;
+                                                }
+                                                anchors.fill: parent;
+                                                anchors.margins: 2;
+                                            }
                                             Column {
+                                                id: col;
                                                 spacing: 4;
-                                                anchors.centerIn: parent;
+                                                anchors.centerIn: (currentIcon === item ? null : parent);
+                                                Drag.keys: ["LAUNCHER_ICON"];
+                                                Drag.source: item;
+                                                Drag.active: item.drag.active;
+                                                Drag.hotSpot: Qt.point (width * 0.5, height * 0.5);
 
                                                 Image {
                                                     scale: (item.pressed ? 0.85 : 1.0);
                                                     width: iconSizeBig.width;
                                                     height: iconSizeBig.height;
-                                                    source: "qrc:///logos/%1.png".arg (modelData ["icon"]);
+                                                    source: "qrc:///logos/%1.png".arg (item.icon);
                                                     smooth: true;
                                                     mipmap: true;
+                                                    opacity: (edit && currentIcon !== null && currentIcon !== item ? 0.35 : 1.0);
                                                     fillMode: Image.Stretch;
                                                     sourceSize: iconSizeBig;
                                                     antialiasing: true;
@@ -421,8 +515,9 @@ Item {
                                                     Behavior on scale { NumberAnimation { duration: 150; } }
                                                 }
                                                 Text {
-                                                    text: modelData ["label"];
+                                                    text: item.label;
                                                     color: secondaryColor;
+                                                    opacity: (edit ? 0.35 : 1.0);
                                                     font {
                                                         family: fontName;
                                                         weight: Font.Light;
@@ -431,11 +526,62 @@ Item {
                                                     anchors.horizontalCenter: parent.horizontalCenter;
                                                 }
                                             }
+                                            DropArea {
+                                                id: dropper;
+                                                keys: ["LAUNCHER_ICON"];
+                                                visible: (edit && currentIcon !== item);
+                                                anchors.fill: parent;
+                                                onEntered: {
+                                                    console.log ("DROPPED", drag.source, drag.source.position, "upon", item.position);
+                                                    // TODO : retrieve both parent models for folder nesting
+                                                    //visualModel.items.move(drag.source.visualIndex, delegateRoot.visualIndex)
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
+                    }
+                }
+            }
+            Item {
+                id: toolbar;
+                visible: edit;
+                implicitHeight: headerSize;
+                anchors {
+                    left: parent.left;
+                    right: parent.right;
+                    bottom: parent.bottom;
+                }
+
+                Rectangle {
+                    color: primaryColor;
+                    opacity: 0.15;
+                    anchors.fill: parent;
+                }
+                MouseArea {
+                    implicitWidth: (parent.width * 0.35);
+                    implicitHeight: (headerSize * 0.85);
+                    anchors.centerIn: parent;
+                    onClicked: { edit = false; }
+
+                    Rectangle {
+                        color: "black";
+                        radius: 7;
+                        opacity: 0.35;
+                        antialiasing: true;
+                        anchors.fill: parent;
+                    }
+                    Text {
+                        text: qsTr ("Exit edit mode");
+                        color: primaryColor;
+                        font {
+                            family: fontName;
+                            weight: Font.Light;
+                            pixelSize: fontSizeNormal;
+                        }
+                        anchors.centerIn: parent;
                     }
                 }
             }
