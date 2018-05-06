@@ -372,6 +372,21 @@ Item {
                                 }
                                 onPressAndHold: { enterEditMode (); }
 
+                                DropArea {
+                                    keys: ["LAUNCHER_ICON"];
+                                    visible: (currentMovingIcon !== null);
+                                    anchors.fill: parent;
+                                    onEntered: { animOpenFolder.start (); }
+                                    onExited:  { animOpenFolder.stop (); }
+
+                                    Timer {
+                                        id: animOpenFolder;
+                                        repeat: false;
+                                        running: false;
+                                        interval: 1000;
+                                        onTriggered: { group.forceOpened = true; }
+                                    }
+                                }
                                 Rectangle {
                                     color: accentColor;
                                     opacity: (parent.pressed || group.isOpened ? 0.35 : 0.0);
@@ -678,7 +693,7 @@ Item {
                                             }
                                             onReleased: {
                                                 if (edit) {
-                                                    if (col.Drag.target) {
+                                                    if (col.Drag.target && col.Drag.target.keys.indexOf ("GRID") > -1) {
                                                         col.Drag.drop ();
                                                     }
                                                     else {
@@ -733,7 +748,7 @@ Item {
                                             }
                                             DropArea {
                                                 id: dropper;
-                                                keys: ["LAUNCHER_ICON"];
+                                                keys: ["LAUNCHER_ICON", "GRID"];
                                                 enabled: (currentMovingIcon !== item);
                                                 visible: (edit && currentMovingIcon !== null);
                                                 anchors.fill: parent;
@@ -768,7 +783,7 @@ Item {
 
                                         DropArea {
                                             id: dropperLast;
-                                            keys: ["LAUNCHER_ICON"];
+                                            keys: ["LAUNCHER_ICON", "GRID"];
                                             visible: (currentMovingIcon !== null);
                                             anchors.fill: parent;
                                             onDropped: {
@@ -837,6 +852,48 @@ Item {
                             }
                         }
                     }
+                }
+            }
+            DropArea {
+                keys: ["LAUNCHER_ICON"];
+                visible: (currentMovingIcon !== null);
+                anchors {
+                    top: parent.top;
+                    left: parent.left;
+                    right: parent.right;
+                    bottom: flicker.top;
+                    bottomMargin: -10;
+                }
+                onEntered: { animScrollUp.start (); }
+                onExited:  { animScrollUp.stop (); }
+
+                Timer {
+                    id: animScrollUp;
+                    repeat: true;
+                    running: false;
+                    interval: 20;
+                    onTriggered: { flicker.contentY = Math.max ((flicker.contentY -10), 0); }
+                }
+            }
+            DropArea {
+                keys: ["LAUNCHER_ICON"];
+                visible: (currentMovingIcon !== null);
+                anchors {
+                    top: toolbar.top;
+                    left: parent.left;
+                    right: parent.right;
+                    bottom: parent.bottom;
+                    topMargin: -10;
+                }
+                onEntered: { animScrollDown.start (); }
+                onExited:  { animScrollDown.stop (); }
+
+                Timer {
+                    id: animScrollDown;
+                    repeat: true;
+                    running: false;
+                    interval: 20;
+                    onTriggered: { flicker.contentY = Math.min ((flicker.contentY +10), (flicker.contentHeight - flicker.height)); }
                 }
             }
             Item {
