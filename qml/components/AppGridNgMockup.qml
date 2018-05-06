@@ -223,6 +223,7 @@ Item {
         Item {
             height: parent.height;
             visible: false;
+            opacity: (shown ? 1 : 0);
             anchors {
                 left: parent.left;
                 right: parent.right;
@@ -230,6 +231,7 @@ Item {
                 bottomMargin: (shown ? 0 : -height);
             }
 
+            Behavior on opacity { NumberAnimation { duration: 280; } }
             Behavior on anchors.bottomMargin { NumberAnimation { duration: 280; } }
             Timer {
                 repeat: false;

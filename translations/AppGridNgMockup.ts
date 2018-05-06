@@ -41,5 +41,37 @@ are going to be uninstalled</source>
         <source>Apply</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>This app is a fake Lipstick mockup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>to allow you to test</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>my new launcher proposal for SFOS 3.0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Swipe up to show launcher,</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Long press an icon or a folder header</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>to enter edit mode.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Changes are not persistant,</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>and everything is fake !</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 </TS>
