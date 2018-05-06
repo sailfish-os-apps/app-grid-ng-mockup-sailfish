@@ -107,6 +107,31 @@ Item {
         verticalAlignment: Image.AlignVCenter;
         horizontalAlignment: Image.AlignHCenter;
         anchors.fill: parent;
+
+        Text {
+            text: [
+                qsTr ("This app is a fake Lipstick mockup"),
+                qsTr ("to allow you to test"),
+                qsTr ("my new launcher proposal for SFOS 3.0"),
+                "",
+                qsTr ("Swipe up to show launcher,"),
+                qsTr ("Long press an icon or a folder header"),
+                qsTr ("to enter edit mode."),
+                "",
+                qsTr ("Changes are not persistant,"),
+                qsTr ("and everything is fake !"),
+            ].join ("\n");
+            color: "red";
+            visible: !shown;
+            textFormat: Text.PlainText;
+            horizontalAlignment: Text.AlignHCenter;
+            font {
+                family: fontName;
+                weight: Font.Light;
+                pixelSize: fontSizeBig;
+            }
+            anchors.centerIn: parent;
+        }
     }
     Item {
         id: statusbar;
