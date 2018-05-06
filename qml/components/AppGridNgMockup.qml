@@ -319,6 +319,7 @@ Item {
                                     }
                                     Row {
                                         opacity: (!group.isCurrent ? 1.0 : 0.0);
+                                        visible: !edit;
                                         spacing: 16;
                                         enabled: !edit;
                                         anchors.verticalCenter: parent.verticalCenter;
@@ -392,17 +393,16 @@ Item {
                                     selectedTextColor: accentColor;
                                     verticalAlignment: Text.AlignVCenter;
                                     activeFocusOnPress: true;
-                                    horizontalAlignment: Text.AlignRight;
+                                    horizontalAlignment: Text.AlignHCenter;
                                     font {
                                         family: fontName;
                                         weight: Font.Light;
-                                        pixelSize: (group.isCurrent ? fontSizeBig : fontSizeNormal);
+                                        pixelSize: fontSizeNormal;
                                     }
                                     anchors {
-                                        left: (group.isCurrent ? parent.left : list.right);
-                                        right: strip.left;
-                                        leftMargin: (group.isCurrent ? 60 : 20);
-                                        rightMargin: 20;
+                                        left: list.right;
+                                        right: buttons.left;
+                                        margins: 16;
                                         verticalCenter: parent.verticalCenter;
                                     }
                                     onEditingFinished: {
@@ -426,7 +426,7 @@ Item {
                                     }
                                 }
                                 Row {
-                                    id: strip;
+                                    id: buttons;
                                     visible: edit;
                                     spacing: 8;
                                     anchors {
@@ -475,6 +475,35 @@ Item {
                                         }
                                         Image {
                                             source: "qrc:///symbols/icon-m-page-down.png";
+                                            smooth: true;
+                                            mipmap: true;
+                                            fillMode: Image.Stretch;
+                                            sourceSize: iconSizeNormal;
+                                            antialiasing: true;
+                                            anchors.fill: parent;
+                                        }
+                                    }
+                                    MouseArea {
+                                        opacity: (enabled ? 1.0 : 0.15);
+                                        implicitWidth: iconSizeNormal.width;
+                                        implicitHeight: iconSizeNormal.height;
+                                        onClicked: {
+                                            for (var idx = 0; idx < group.appsModel.count; ++idx) {
+                                                foldersModel.get (0) ["apps"].append (group.appsModel.get (idx));
+                                            }
+                                            group.appsModel.clear ();
+                                            foldersModel.remove (model.index);
+                                        }
+
+                                        Rectangle {
+                                            color: "darkred";
+                                            radius: 7;
+                                            opacity: (parent.pressed ? 0.15 : 0.35);
+                                            antialiasing: true;
+                                            anchors.fill: parent;
+                                        }
+                                        Image {
+                                            source: "qrc:///symbols/icon-m-delete.png";
                                             smooth: true;
                                             mipmap: true;
                                             fillMode: Image.Stretch;
@@ -660,6 +689,49 @@ Item {
                                         }
                                     }
                                 }
+                            }
+                        }
+                    }
+                    MouseArea {
+                        visible: edit;
+                        opacity: (currentMovingIcon !== null ? 0.35 : 1.0);
+                        implicitHeight: headerSize;
+                        anchors {
+                            left: parent.left;
+                            right: parent.right;
+                        }
+                        onClicked: {
+                            foldersModel.append ({ "group" : qsTr ("New folder"), "apps" : [] });
+                        }
+
+                        Row {
+                            spacing: 16;
+                            anchors {
+                                left: parent.left;
+                                margins: 20;
+                                verticalCenter: parent.verticalCenter;
+                            }
+
+                            Image {
+                                width: iconSizeNormal.width;
+                                height: iconSizeNormal.height;
+                                source: "qrc:///symbols/icon-m-new.png";
+                                smooth: true;
+                                mipmap: true;
+                                fillMode: Image.Stretch;
+                                sourceSize: iconSizeNormal;
+                                antialiasing: true;
+                                anchors.verticalCenter: parent.verticalCenter;
+                            }
+                            Text {
+                                text: qsTr ("New folder...");
+                                color: primaryColor;
+                                font {
+                                    family: fontName;
+                                    weight: Font.Light;
+                                    pixelSize: fontSizeNormal;
+                                }
+                                anchors.verticalCenter: parent.verticalCenter;
                             }
                         }
                     }
