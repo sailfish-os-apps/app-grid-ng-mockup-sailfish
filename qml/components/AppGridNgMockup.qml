@@ -48,6 +48,51 @@ Item {
         edit = false;
     }
 
+    function createFolder () {
+        foldersModel.append ({
+                                 "group" : qsTr ("New folder"),
+                                 "apps"  : []
+                             });
+    }
+
+    function removeFolder (folderIdx) {
+        var folderAppsModel = foldersModel.get (folderIdx) ["apps"];
+        var unfolderedAppsModel = foldersModel.get (0) ["apps"];
+        for (var idx = 0; idx < folderAppsModel.count; ++idx) {
+            unfolderedAppsModel.append (folderAppsModel.get (idx));
+        }
+        folderAppsModel.clear ();
+        foldersModel.remove (folderIdx);
+    }
+
+    function renameFolder (folderIdx, name) {
+        var tmp = name.trim ();
+        if (tmp === "") {
+            tmp = qsTr ("Untitled");
+        }
+        focus = false;
+        foldersModel.setProperty (folderIdx, "group", tmp);
+    }
+
+    function moveFolderUp (folderIdx) {
+        foldersModel.move (model.index, model.index -1, 1);
+    }
+
+    function moveFolderDown (folderIdx) {
+        foldersModel.move (model.index, model.index +1, 1);
+    }
+
+    function reorderIcons (srcFolderModel, srcPos, dstFolderModel, dstPos) {
+        currentMovingIcon = null;
+        if (srcFolderModel === dstFolderModel) {
+            dstFolderModel.move (srcPos, dstPos, 1);
+        }
+        else {
+            dstFolderModel.insert (dstPos, srcFolderModel.get (srcPos));
+            srcFolderModel.remove (srcPos);
+        }
+    }
+
     Image {
         source: wallpaper;
         fillMode: Image.PreserveAspectCrop;
@@ -425,12 +470,8 @@ Item {
                                         verticalCenter: parent.verticalCenter;
                                     }
                                     onEditingFinished: {
-                                        var tmp = text.trim ();
-                                        if (tmp === "") {
-                                            tmp = qsTr ("Untitled");
-                                        }
+                                        renameFolder (model.index, text);
                                         focus = false;
-                                        foldersModel.setProperty (model.index, "group", tmp);
                                     }
 
                                     Binding on text { value: group.groupLabel; }
@@ -459,7 +500,7 @@ Item {
                                         opacity: (enabled ? 1.0 : 0.15);
                                         implicitWidth: iconSizeNormal.width;
                                         implicitHeight: iconSizeNormal.height;
-                                        onClicked: { foldersModel.move (model.index, model.index -1, 1); }
+                                        onClicked: { moveFolderUp (model.index); }
 
                                         Rectangle {
                                             color: "black";
@@ -483,7 +524,7 @@ Item {
                                         opacity: (enabled ? 1.0 : 0.15);
                                         implicitWidth: iconSizeNormal.width;
                                         implicitHeight: iconSizeNormal.height;
-                                        onClicked: { foldersModel.move (model.index, model.index +1, 1); }
+                                        onClicked: { moveFolderDown (model.index); }
 
                                         Rectangle {
                                             color: "black";
@@ -506,16 +547,10 @@ Item {
                                         opacity: (enabled ? 1.0 : 0.15);
                                         implicitWidth: iconSizeNormal.width;
                                         implicitHeight: iconSizeNormal.height;
-                                        onClicked: {
-                                            for (var idx = 0; idx < group.appsModel.count; ++idx) {
-                                                foldersModel.get (0) ["apps"].append (group.appsModel.get (idx));
-                                            }
-                                            group.appsModel.clear ();
-                                            foldersModel.remove (model.index);
-                                        }
+                                        onClicked: { removeFolder (model.index); }
 
                                         Rectangle {
-                                            color: "darkred";
+                                            color: "red";
                                             radius: 7;
                                             opacity: (parent.pressed ? 0.15 : 0.35);
                                             antialiasing: true;
@@ -565,9 +600,7 @@ Item {
                                             visible: (opacity > 0.0);
                                             implicitWidth: itemSize;
                                             implicitHeight: itemSize;
-                                            drag {
-                                                target: (currentMovingIcon === item ? col : null);
-                                            }
+                                            drag.target: (currentMovingIcon === item ? col : null);
                                             onClicked: {
                                                 if (!edit) {
                                                     launchApp (item.label, item.icon);
@@ -644,21 +677,10 @@ Item {
                                                 visible: (edit && currentMovingIcon !== null);
                                                 anchors.fill: parent;
                                                 onDropped: {
-                                                    //console.log ("DROPPED",
-                                                    //             drop.source,
-                                                    //             drop.source.position,
-                                                    //             drop.source.folder,
-                                                    //             "upon",
-                                                    //             item.position,
-                                                    //             item.folder);
-                                                    currentMovingIcon = null;
-                                                    if (drop.source.folder === item.folder) {
-                                                        item.folder.move (drop.source.position, item.position, 1);
-                                                    }
-                                                    else {
-                                                        item.folder.insert (item.position, drop.source.folder.get (drop.source.position));
-                                                        drop.source.folder.remove (drop.source.position);
-                                                    }
+                                                    reorderIcons (drop.source.folder,
+                                                                  drop.source.position,
+                                                                  item.folder,
+                                                                  item.position);
                                                 }
 
                                                 Rectangle {
@@ -685,14 +707,12 @@ Item {
                                             visible: (currentMovingIcon !== null);
                                             anchors.fill: parent;
                                             onDropped: {
-                                                currentMovingIcon = null;
-                                                if (drop.source.folder === group.appsModel) {
-                                                    group.appsModel.move (drop.source.position, group.appsModel.count -1, 1);
-                                                }
-                                                else {
-                                                    group.appsModel.append (drop.source.folder.get (drop.source.position));
-                                                    drop.source.folder.remove (drop.source.position);
-                                                }
+                                                reorderIcons (drop.source.folder,
+                                                              drop.source.position,
+                                                              group.appsModel,
+                                                              (group.appsModel !== drop.source.folder
+                                                               ? group.appsModel.count
+                                                               : group.appsModel.count -1));
                                             }
 
                                             Rectangle {
@@ -719,7 +739,7 @@ Item {
                             left: parent.left;
                             right: parent.right;
                         }
-                        onClicked: { foldersModel.append ({ "group" : qsTr ("New folder"), "apps" : [] }); }
+                        onClicked: { createFolder (); }
 
                         Row {
                             spacing: 16;
