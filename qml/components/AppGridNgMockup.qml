@@ -325,20 +325,21 @@ Item {
 
                                         Behavior on opacity { NumberAnimation { duration: 280; } }
                                         Repeater {
-                                            model: Math.min (group.appsModel.count, 3);
+                                            model: group.appsModel;
                                             delegate: Image {
                                                 id: itemMini;
                                                 scale: (clicker.pressed ? 0.85 : 1.0);
                                                 source: "qrc:///logos/%1.png".arg (icon);
                                                 smooth: true;
                                                 mipmap: true;
+                                                visible: (model.index < 3);
                                                 opacity: (edit ? 0.35 : 1.0);
                                                 sourceSize: iconSizeNormal;
                                                 antialiasing: true;
                                                 anchors.verticalCenter: parent.verticalCenter;
 
-                                                readonly property string icon  : group.appsModel.get (model.index) ["icon"];
-                                                readonly property string label : group.appsModel.get (model.index) ["label"];
+                                                readonly property string icon  : model ["icon"];
+                                                readonly property string label : model ["label"];
 
                                                 Behavior on scale { NumberAnimation { duration: 150; } }
                                                 MouseArea {
@@ -399,12 +400,19 @@ Item {
                                     }
                                     anchors {
                                         left: (group.isCurrent ? parent.left : list.right);
-                                        right: parent.right;
+                                        right: strip.left;
                                         leftMargin: (group.isCurrent ? 60 : 20);
                                         rightMargin: 20;
                                         verticalCenter: parent.verticalCenter;
                                     }
-                                    onEditingFinished: { group.groupLabel = text; }
+                                    onEditingFinished: {
+                                        var tmp = text.trim ();
+                                        if (tmp === "") {
+                                            tmp = qsTr ("Untitled");
+                                        }
+                                        focus = false;
+                                        foldersModel.setProperty (model.index, "group", tmp);
+                                    }
 
                                     Binding on text { value: group.groupLabel; }
                                     Rectangle {
@@ -414,6 +422,65 @@ Item {
                                             top: parent.bottom;
                                             left: parent.left;
                                             right: parent.right;
+                                        }
+                                    }
+                                }
+                                Row {
+                                    id: strip;
+                                    visible: edit;
+                                    spacing: 8;
+                                    anchors {
+                                        right: parent.right;
+                                        margins: 16;
+                                        verticalCenter: parent.verticalCenter;
+                                    }
+
+                                    MouseArea {
+                                        enabled: (model.index > 1);
+                                        opacity: (enabled ? 1.0 : 0.15);
+                                        implicitWidth: iconSizeNormal.width;
+                                        implicitHeight: iconSizeNormal.height;
+                                        onClicked: { foldersModel.move (model.index, model.index -1, 1); }
+
+                                        Rectangle {
+                                            color: "black";
+                                            radius: 7;
+                                            opacity: (parent.pressed ? 0.15 : 0.35);
+                                            antialiasing: true;
+                                            anchors.fill: parent;
+                                        }
+                                        Image {
+                                            source: "qrc:///symbols/icon-m-page-up.png";
+                                            smooth: true;
+                                            mipmap: true;
+                                            fillMode: Image.Stretch;
+                                            sourceSize: iconSizeNormal;
+                                            antialiasing: true;
+                                            anchors.fill: parent;
+                                        }
+                                    }
+                                    MouseArea {
+                                        enabled: (model.index < foldersModel.count -1);
+                                        opacity: (enabled ? 1.0 : 0.15);
+                                        implicitWidth: iconSizeNormal.width;
+                                        implicitHeight: iconSizeNormal.height;
+                                        onClicked: { foldersModel.move (model.index, model.index +1, 1); }
+
+                                        Rectangle {
+                                            color: "black";
+                                            radius: 7;
+                                            opacity: (parent.pressed ? 0.15 : 0.35);
+                                            antialiasing: true;
+                                            anchors.fill: parent;
+                                        }
+                                        Image {
+                                            source: "qrc:///symbols/icon-m-page-down.png";
+                                            smooth: true;
+                                            mipmap: true;
+                                            fillMode: Image.Stretch;
+                                            sourceSize: iconSizeNormal;
+                                            antialiasing: true;
+                                            anchors.fill: parent;
                                         }
                                     }
                                 }
