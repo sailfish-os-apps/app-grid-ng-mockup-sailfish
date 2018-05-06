@@ -9,7 +9,7 @@ Item {
     property bool edit  : false;
 
     property QtObject currentGroup : null;
-    property QtObject currentIcon  : null;
+    property QtObject currentMovingIcon  : null;
 
     property color accentColor    : Qt.lighter ("steelblue");
     property color primaryColor   : "white";
@@ -320,6 +320,7 @@ Item {
                                     Row {
                                         opacity: (!group.isCurrent ? 1.0 : 0.0);
                                         spacing: 16;
+                                        enabled: !edit;
                                         anchors.verticalCenter: parent.verticalCenter;
 
                                         Behavior on opacity { NumberAnimation { duration: 280; } }
@@ -450,7 +451,7 @@ Item {
                                             implicitWidth: itemSize;
                                             implicitHeight: itemSize;
                                             drag {
-                                                target: (currentIcon === item ? col : null);
+                                                target: (currentMovingIcon === item ? col : null);
                                             }
                                             onClicked: {
                                                 if (!edit) {
@@ -462,42 +463,37 @@ Item {
                                                     edit = true;
                                                 }
                                                 else {
-                                                    currentIcon = item;
+                                                    currentMovingIcon = item;
                                                 }
                                             }
                                             onReleased: {
-                                                //if (col.Drag.target) {
-                                                //    console.log ("RELEASED UPON", col.Drag.target);
-                                                //}
-                                                if (currentIcon === item) {
-                                                    currentIcon = null;
+                                                if (edit) {
+                                                    if (col.Drag.target) {
+                                                        col.Drag.drop ();
+                                                    }
+                                                    else {
+                                                        if (currentMovingIcon === item) {
+                                                            currentMovingIcon = null;
+                                                        }
+                                                    }
                                                 }
                                             }
 
-                                            readonly property int    position : model.index;
-                                            readonly property string icon     : model ["icon"];
-                                            readonly property string label    : model ["label"];
+                                            readonly property int       position : model.index;
+                                            readonly property string    icon     : model ["icon"];
+                                            readonly property string    label    : model ["label"];
+                                            readonly property ListModel folder   : group.appsModel;
 
                                             Behavior on opacity { NumberAnimation { duration: 280; } }
-                                            Rectangle {
-                                                color: "transparent";
-                                                visible: edit;
-                                                opacity: 0.35;
-                                                border {
-                                                    width: 1;
-                                                    color: secondaryColor;
-                                                }
-                                                anchors.fill: parent;
-                                                anchors.margins: 2;
-                                            }
                                             Column {
                                                 id: col;
                                                 spacing: 4;
-                                                anchors.centerIn: (currentIcon === item ? null : parent);
+                                                anchors.centerIn: (currentMovingIcon === item ? null : parent);
                                                 Drag.keys: ["LAUNCHER_ICON"];
                                                 Drag.source: item;
                                                 Drag.active: item.drag.active;
                                                 Drag.hotSpot: Qt.point (width * 0.5, height * 0.5);
+                                                Drag.dragType: Drag.Internal;
 
                                                 Image {
                                                     scale: (item.pressed ? 0.85 : 1.0);
@@ -506,7 +502,7 @@ Item {
                                                     source: "qrc:///logos/%1.png".arg (item.icon);
                                                     smooth: true;
                                                     mipmap: true;
-                                                    opacity: (edit && currentIcon !== null && currentIcon !== item ? 0.35 : 1.0);
+                                                    opacity: (edit && currentMovingIcon !== null && currentMovingIcon !== item ? 0.35 : 1.0);
                                                     fillMode: Image.Stretch;
                                                     sourceSize: iconSizeBig;
                                                     antialiasing: true;
@@ -529,13 +525,70 @@ Item {
                                             DropArea {
                                                 id: dropper;
                                                 keys: ["LAUNCHER_ICON"];
-                                                visible: (edit && currentIcon !== item);
+                                                enabled: (currentMovingIcon !== item);
+                                                visible: (edit && currentMovingIcon !== null);
                                                 anchors.fill: parent;
-                                                onEntered: {
-                                                    console.log ("DROPPED", drag.source, drag.source.position, "upon", item.position);
-                                                    // TODO : retrieve both parent models for folder nesting
-                                                    //visualModel.items.move(drag.source.visualIndex, delegateRoot.visualIndex)
+                                                onDropped: {
+                                                    //console.log ("DROPPED",
+                                                    //             drop.source,
+                                                    //             drop.source.position,
+                                                    //             drop.source.folder,
+                                                    //             "upon",
+                                                    //             item.position,
+                                                    //             item.folder);
+                                                    currentMovingIcon = null;
+                                                    if (drop.source.folder === item.folder) {
+                                                        item.folder.move (drop.source.position, item.position, 1);
+                                                    }
+                                                    else {
+                                                        item.folder.insert (item.position, drop.source.folder.get (drop.source.position));
+                                                        drop.source.folder.remove (drop.source.position);
+                                                    }
                                                 }
+
+                                                Rectangle {
+                                                    color: "transparent";
+                                                    opacity: 0.35;
+                                                    border {
+                                                        width: 1;
+                                                        color: secondaryColor;
+                                                    }
+                                                    anchors.fill: parent;
+                                                    anchors.margins: 2;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Item {
+                                        visible: edit;
+                                        implicitWidth: itemSize;
+                                        implicitHeight: itemSize;
+
+                                        DropArea {
+                                            id: dropperLast;
+                                            keys: ["LAUNCHER_ICON"];
+                                            visible: (currentMovingIcon !== null);
+                                            anchors.fill: parent;
+                                            onDropped: {
+                                                currentMovingIcon = null;
+                                                if (drop.source.folder === group.appsModel) {
+                                                    group.appsModel.move (drop.source.position, group.appsModel.count -1, 1);
+                                                }
+                                                else {
+                                                    group.appsModel.append (drop.source.folder.get (drop.source.position));
+                                                    drop.source.folder.remove (drop.source.position);
+                                                }
+                                            }
+
+                                            Rectangle {
+                                                color: "transparent";
+                                                opacity: 0.35;
+                                                border {
+                                                    width: 1;
+                                                    color: secondaryColor;
+                                                }
+                                                anchors.fill: parent;
+                                                anchors.margins: 2;
                                             }
                                         }
                                     }
