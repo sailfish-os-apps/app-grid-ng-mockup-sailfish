@@ -8,8 +8,8 @@ Item {
     property bool shown : false;
     property bool edit  : false;
 
-    property QtObject currentGroup : null;
-    property QtObject currentMovingIcon  : null;
+    property QtObject currentGroup      : null;
+    property QtObject currentMovingIcon : null;
 
     property color accentColor    : Qt.lighter ("steelblue");
     property color primaryColor   : "white";
@@ -37,6 +37,15 @@ Item {
         compoLaunchAnim.createObject (overlay, { icon: icon });
         currentGroup = null;
         shown = false;
+    }
+
+    function enterEditMode () {
+        edit = true;
+        currentGroup = null;
+    }
+
+    function leaveEditMode () {
+        edit = false;
     }
 
     Image {
@@ -143,8 +152,8 @@ Item {
         property real old : 0.0;
 
         Item {
-            visible: false;
             height: parent.height;
+            visible: false;
             anchors {
                 left: parent.left;
                 right: parent.right;
@@ -176,6 +185,7 @@ Item {
                 }
             }
             Flickable {
+                id: flicker;
                 clip: true;
                 contentHeight: layout.height;
                 flickableDirection: Flickable.VerticalFlick;
@@ -278,7 +288,9 @@ Item {
                             readonly property ListModel appsModel  : model ["apps"];
 
                             readonly property bool isDefault : (groupLabel === "");
-                            readonly property bool isCurrent : (currentGroup === group || isDefault);
+                            readonly property bool isCurrent : ((edit ? forceOpened : currentGroup === group) || isDefault);
+
+                            property bool forceOpened : false;
 
                             MouseArea {
                                 id: header;
@@ -288,8 +300,15 @@ Item {
                                     left: parent.left;
                                     right: parent.right;
                                 }
-                                onClicked: { currentGroup = (group.isCurrent ? null : group); }
-                                onPressAndHold: { edit = true; }
+                                onClicked: {
+                                    if (edit) {
+                                        group.forceOpened = !group.forceOpened;
+                                    }
+                                    else {
+                                        currentGroup = (group.isCurrent ? null : group);
+                                    }
+                                }
+                                onPressAndHold: { enterEditMode (); }
 
                                 Rectangle {
                                     color: accentColor;
@@ -347,7 +366,7 @@ Item {
                                                     id: clicker;
                                                     anchors.fill: parent;
                                                     onClicked: { launchApp (itemMini.label, itemMini.icon); }
-                                                    onPressAndHold: { edit = true; }
+                                                    onPressAndHold: { enterEditMode (); }
                                                 }
                                             }
                                         }
@@ -556,7 +575,7 @@ Item {
                                             }
                                             onPressAndHold: {
                                                 if (!edit) {
-                                                    edit = true;
+                                                    enterEditMode ();
                                                 }
                                                 else {
                                                     currentMovingIcon = item;
@@ -700,9 +719,7 @@ Item {
                             left: parent.left;
                             right: parent.right;
                         }
-                        onClicked: {
-                            foldersModel.append ({ "group" : qsTr ("New folder"), "apps" : [] });
-                        }
+                        onClicked: { foldersModel.append ({ "group" : qsTr ("New folder"), "apps" : [] }); }
 
                         Row {
                             spacing: 16;
@@ -756,7 +773,7 @@ Item {
                     implicitWidth: (parent.width * 0.35);
                     implicitHeight: (headerSize * 0.85);
                     anchors.centerIn: parent;
-                    onClicked: { edit = false; }
+                    onClicked: { leaveEditMode (); }
 
                     Rectangle {
                         color: "black";
@@ -774,6 +791,26 @@ Item {
                             pixelSize: fontSizeNormal;
                         }
                         anchors.centerIn: parent;
+                    }
+                }
+            }
+            Item {
+                width: 6;
+                visible: (flicker.height < flicker.contentHeight);
+                anchors {
+                    top: parent.top;
+                    right: parent.right;
+                    bottom: parent.bottom;
+                }
+
+                Rectangle {
+                    y: ((parent.height - height) * flicker.contentY / (flicker.contentHeight - flicker.height));
+                    color: accentColor;
+                    height: (parent.height * flicker.height / flicker.contentHeight);
+                    opacity: 0.65;
+                    anchors {
+                        left: parent.left;
+                        right: parent.right;
                     }
                 }
             }
