@@ -288,12 +288,17 @@ Item {
                     }
 
                     Rectangle {
-                        opacity: 0.35;
+                        opacity: 0.65;
+                        implicitHeight: (flicker.contentY < 0 ? -flicker.contentY : 0);
                         gradient: Gradient {
                             GradientStop { position: 0; color: "transparent"; }
                             GradientStop { position: 1; color: accentColor; }
                         }
-                        anchors.fill: parent;
+                        anchors {
+                            left: parent.left;
+                            right: parent.right;
+                            bottom: parent.bottom;
+                        }
                     }
                     Rectangle {
                         color: accentColor;
@@ -315,7 +320,7 @@ Item {
                             bottomMargin: 20;
                         }
 
-                        readonly property bool active : (flicker.contentY < -(height + anchors.bottomMargin * 2));
+                        readonly property bool active : (flicker.contentY < -(height * 3 + anchors.bottomMargin * 2));
 
                         Rectangle {
                             color: accentColor;
