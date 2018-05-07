@@ -414,9 +414,18 @@ Item {
                                 DropArea {
                                     keys: ["LAUNCHER_ICON"];
                                     visible: (currentMovingIcon !== null);
+                                    enabled: (flicker.contentY >= 0 && absolutePos >= 0 && absolutePos <= flicker.height);
                                     anchors.fill: parent;
                                     onEntered: { animOpenFolder.start (); }
                                     onExited:  { animOpenFolder.stop (); }
+
+                                    readonly property int absolutePos : (flicker.contentY >= 0
+                                                                         ? 0
+                                                                           + layout.y
+                                                                           + group.y
+                                                                           + header.y
+                                                                           - flicker.contentY
+                                                                         : 0);
 
                                     Timer {
                                         id: animOpenFolder;
@@ -685,6 +694,7 @@ Item {
                                 }
                             }
                             Item {
+                                id: cutter;
                                 clip: (height < flow.height);
                                 height: (flow.visible ? flow.height : 0);
                                 anchors {
@@ -704,6 +714,7 @@ Item {
                                     visible: group.isOpened;
                                     spacing: 0;
                                     anchors {
+                                        top: parent.top;
                                         left: parent.left;
                                         right: parent.right;
                                     }
@@ -790,7 +801,10 @@ Item {
                                             DropArea {
                                                 id: dropper;
                                                 keys: ["LAUNCHER_ICON", "GRID"];
-                                                enabled: (currentMovingIcon !== item);
+                                                enabled: (currentMovingIcon !== item &&
+                                                          flicker.contentY >= 0 &&
+                                                          absolutePos >= 0 &&
+                                                          absolutePos <= flicker.height);
                                                 visible: (edit && currentMovingIcon !== null);
                                                 anchors.fill: parent;
                                                 onDropped: {
@@ -800,9 +814,18 @@ Item {
                                                                   item.position);
                                                 }
 
+                                                readonly property int absolutePos : (flicker.contentY >= 0
+                                                                                     ? 0
+                                                                                       + layout.y
+                                                                                       + group.y
+                                                                                       + cutter.y
+                                                                                       + item.y
+                                                                                       - flicker.contentY
+                                                                                     : 0);
                                                 Rectangle {
                                                     color: "transparent";
                                                     opacity: 0.35;
+                                                    visible: parent.enabled;
                                                     border {
                                                         width: 1;
                                                         color: secondaryColor;
@@ -814,6 +837,7 @@ Item {
                                         }
                                     }
                                     Item {
+                                        id: areaLast;
                                         visible: edit;
                                         implicitWidth: itemSize;
                                         implicitHeight: (group.appsModel
@@ -826,6 +850,7 @@ Item {
                                             id: dropperLast;
                                             keys: ["LAUNCHER_ICON", "GRID"];
                                             visible: (currentMovingIcon !== null);
+                                            enabled: (flicker.contentY >= 0 && absolutePos >= 0 && absolutePos <= flicker.height);
                                             anchors.fill: parent;
                                             onDropped: {
                                                 reorderIcons (drop.source.folder,
@@ -836,9 +861,19 @@ Item {
                                                                : group.appsModel.count -1));
                                             }
 
+                                            readonly property int absolutePos : (flicker.contentY >= 0
+                                                                                 ? 0
+                                                                                   + layout.y
+                                                                                   + group.y
+                                                                                   + cutter.y
+                                                                                   + areaLast.y
+                                                                                   - flicker.contentY
+                                                                                 : 0);
+
                                             Rectangle {
                                                 color: "transparent";
                                                 opacity: 0.35;
+                                                visible: parent.enabled;
                                                 border {
                                                     width: 1;
                                                     color: secondaryColor;
