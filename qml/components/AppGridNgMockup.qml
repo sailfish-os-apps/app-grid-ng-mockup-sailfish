@@ -143,16 +143,6 @@ Item {
             right: parent.right;
         }
 
-        Rectangle {
-            visible: edit;
-            opacity: 0.35;
-            gradient: Gradient {
-                GradientStop { position: 0.0; color: "black"; }
-                GradientStop { position: 0.5; color: "black"; }
-                GradientStop { position: 1.0; color: "transparent"; }
-            }
-            anchors.fill: parent;
-        }
         Row {
             id: row;
             spacing: 8;
@@ -257,6 +247,7 @@ Item {
             Rectangle {
                 color: secondaryColor;
                 radius: (implicitHeight * 0.5);
+                visible: !edit;
                 antialiasing: true;
                 implicitWidth: (parent.width / 5);
                 implicitHeight: 6;
@@ -765,10 +756,12 @@ Item {
                                                 Drag.keys: ["LAUNCHER_ICON"];
                                                 Drag.source: item;
                                                 Drag.active: item.drag.active;
-                                                Drag.hotSpot: Qt.point (width * 0.5, height * 0.5);
+                                                Drag.hotSpot: Qt.point ((ico.x + ico.width  * 0.5),
+                                                                        (ico.y + ico.height * 0.5));
                                                 Drag.dragType: Drag.Internal;
 
                                                 Image {
+                                                    id: ico;
                                                     scale: (item.pressed ? 0.85 : 1.0);
                                                     width: iconSizeBig.width;
                                                     height: iconSizeBig.height;
@@ -862,6 +855,16 @@ Item {
                 }
             }
             Rectangle {
+                color: "black";
+                visible: edit;
+                implicitHeight: statusbar.height;
+                anchors {
+                    top: parent.top;
+                    left: parent.left;
+                    right: parent.right;
+                }
+            }
+            Rectangle {
                 visible: edit;
                 opacity: 0.35;
                 implicitHeight: statusbar.height;
@@ -897,7 +900,7 @@ Item {
                     onTriggered: { flicker.contentY = Math.max ((flicker.contentY -10), 0); }
                 }
                 Rectangle {
-                    color: secondaryColor;
+                    color: accentColor;
                     opacity: 0.35;
                     visible: parent.containsDrag;
                     anchors.fill: parent;
@@ -924,7 +927,7 @@ Item {
                     onTriggered: { flicker.contentY = Math.min ((flicker.contentY +10), (flicker.contentHeight - flicker.height)); }
                 }
                 Rectangle {
-                    color: secondaryColor;
+                    color: accentColor;
                     opacity: 0.35;
                     visible: parent.containsDrag;
                     anchors.fill: parent;
