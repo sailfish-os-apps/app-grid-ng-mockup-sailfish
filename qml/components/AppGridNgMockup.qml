@@ -424,6 +424,7 @@ Item {
                                                                            + layout.y
                                                                            + group.y
                                                                            + header.y
+                                                                           + (height * 0.5)
                                                                            - flicker.contentY
                                                                          : 0);
 
@@ -820,6 +821,7 @@ Item {
                                                                                        + group.y
                                                                                        + cutter.y
                                                                                        + item.y
+                                                                                       + (height * 0.5)
                                                                                        - flicker.contentY
                                                                                      : 0);
                                                 Rectangle {
@@ -867,6 +869,7 @@ Item {
                                                                                    + group.y
                                                                                    + cutter.y
                                                                                    + areaLast.y
+                                                                                   + (height * 0.5)
                                                                                    - flicker.contentY
                                                                                  : 0);
 
