@@ -270,7 +270,94 @@ Item {
                         shown = false;
                     }
                 }
+                onDraggingChanged: {
+                    if (!dragging) {
+                        if (pulley.active) {
+                            createFolder ();
+                        }
+                    }
+                }
 
+                Item {
+                    height: 280;
+                    visible: edit;
+                    anchors {
+                        left: parent.left;
+                        right: parent.right;
+                        bottom: layout.top;
+                    }
+
+                    Rectangle {
+                        opacity: 0.35;
+                        gradient: Gradient {
+                            GradientStop { position: 0; color: "transparent"; }
+                            GradientStop { position: 1; color: accentColor; }
+                        }
+                        anchors.fill: parent;
+                    }
+                    Rectangle {
+                        color: accentColor;
+                        opacity: 0.85;
+                        implicitHeight: 3;
+                        anchors {
+                            top: parent.bottom;
+                            left: parent.left;
+                            right: parent.right;
+                        }
+                    }
+                    Item {
+                        id: pulley;
+                        implicitHeight: (entry.height + 10);
+                        anchors {
+                            left: parent.left;
+                            right: parent.right;
+                            bottom: parent.bottom;
+                            bottomMargin: 20;
+                        }
+
+                        readonly property bool active : (flicker.contentY < -(height + anchors.bottomMargin * 2));
+
+                        Rectangle {
+                            color: accentColor;
+                            opacity: (pulley.active ? 0.65 : 0.0);
+                            anchors.fill: parent;
+
+                            Behavior on opacity { NumberAnimation { duration: 150; } }
+                        }
+                        Row {
+                            id: entry;
+                            spacing: 16;
+                            anchors {
+                                left: parent.left;
+                                margins: 20;
+                                verticalCenter: parent.verticalCenter;
+                            }
+
+                            Image {
+                                width: (iconSizeNormal.width * 0.65);
+                                height: (iconSizeNormal.height * 0.65);
+                                source: "qrc:///symbols/icon-m-new.png";
+                                smooth: true;
+                                mipmap: true;
+                                fillMode: Image.Stretch;
+                                sourceSize: Qt.size (iconSizeNormal.width * 0.65, iconSizeNormal.height * 0.65);
+                                antialiasing: true;
+                                anchors.verticalCenter: parent.verticalCenter;
+                            }
+                            Text {
+                                text: qsTr ("New folder...");
+                                color: primaryColor;
+                                font {
+                                    family: fontName;
+                                    weight: Font.Light;
+                                    pixelSize: fontSizeNormal;
+                                }
+                                anchors.verticalCenter: parent.verticalCenter;
+                            }
+                        }
+
+                    }
+                }
                 Column {
                     id: layout;
                     anchors {
@@ -835,47 +922,6 @@ Item {
                                         }
                                     }
                                 }
-                            }
-                        }
-                    }
-                    MouseArea {
-                        visible: edit;
-                        opacity: (currentMovingIcon !== null ? 0.35 : 1.0);
-                        implicitHeight: headerSize;
-                        anchors {
-                            left: parent.left;
-                            right: parent.right;
-                        }
-                        onClicked: { createFolder (); }
-
-                        Row {
-                            spacing: 16;
-                            anchors {
-                                left: parent.left;
-                                margins: 20;
-                                verticalCenter: parent.verticalCenter;
-                            }
-
-                            Image {
-                                width: iconSizeNormal.width;
-                                height: iconSizeNormal.height;
-                                source: "qrc:///symbols/icon-m-new.png";
-                                smooth: true;
-                                mipmap: true;
-                                fillMode: Image.Stretch;
-                                sourceSize: iconSizeNormal;
-                                antialiasing: true;
-                                anchors.verticalCenter: parent.verticalCenter;
-                            }
-                            Text {
-                                text: qsTr ("New folder...");
-                                color: primaryColor;
-                                font {
-                                    family: fontName;
-                                    weight: Font.Light;
-                                    pixelSize: fontSizeNormal;
-                                }
-                                anchors.verticalCenter: parent.verticalCenter;
                             }
                         }
                     }
