@@ -32,7 +32,10 @@ Project {
             name: "QML Files";
             fileTags: "qt.core.resource_data";
             files: [
+                "qml/components/silica-fake/MenuItem.qml",
+                "qml/components/silica-fake/PullDownMenu.qml",
                 "qml/components/silica-fake/RemorseItem.qml",
+                "qml/components/silica-fake/SilicaFlickable.qml",
                 "qml/components/silica-fake/THIS FOLDER FAKES SILICA OBJECTS",
                 "qml/components/silica-proxy/THIS FOLDER WRAPS SILICA OBJECTS",
                 "qml/ui_generic.qml",

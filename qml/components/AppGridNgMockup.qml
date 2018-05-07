@@ -143,6 +143,16 @@ Item {
             right: parent.right;
         }
 
+        Rectangle {
+            visible: edit;
+            opacity: 0.35;
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "black"; }
+                GradientStop { position: 0.5; color: "black"; }
+                GradientStop { position: 1.0; color: "transparent"; }
+            }
+            anchors.fill: parent;
+        }
         Row {
             id: row;
             spacing: 8;
@@ -255,112 +265,31 @@ Item {
                     horizontalCenter: parent.horizontalCenter;
                 }
             }
-            Flickable {
+            SilicaFlickable {
                 id: flicker;
-                clip: true;
                 contentHeight: layout.height;
                 flickableDirection: Flickable.VerticalFlick;
                 anchors {
                     fill: parent;
                     topMargin: statusbar.height;
-                    bottomMargin: (edit ? toolbar.height : 0);
+                    bottomMargin: (edit ? statusbar.height : 0);
                 }
                 onContentYChanged: {
                     if (contentY < -280 && !edit) {
                         shown = false;
                     }
                 }
-                onDraggingChanged: {
-                    if (!dragging) {
-                        if (pulley.active) {
-                            createFolder ();
-                        }
-                    }
-                }
 
-                Item {
-                    height: 280;
+                PullDownMenu {
                     visible: edit;
-                    anchors {
-                        left: parent.left;
-                        right: parent.right;
-                        bottom: layout.top;
+
+                    MenuItem {
+                        text: qsTr ("Exit edit mode");
+                        onClicked: { leaveEditMode (); }
                     }
-
-                    Rectangle {
-                        opacity: 0.65;
-                        implicitHeight: (flicker.contentY < 0 ? -flicker.contentY : 0);
-                        gradient: Gradient {
-                            GradientStop { position: 0; color: "transparent"; }
-                            GradientStop { position: 1; color: accentColor; }
-                        }
-                        anchors {
-                            left: parent.left;
-                            right: parent.right;
-                            bottom: parent.bottom;
-                        }
-                    }
-                    Rectangle {
-                        color: accentColor;
-                        opacity: 0.85;
-                        implicitHeight: 3;
-                        anchors {
-                            top: parent.bottom;
-                            left: parent.left;
-                            right: parent.right;
-                        }
-                    }
-                    Item {
-                        id: pulley;
-                        implicitHeight: (entry.height + 10);
-                        anchors {
-                            left: parent.left;
-                            right: parent.right;
-                            bottom: parent.bottom;
-                            bottomMargin: 20;
-                        }
-
-                        readonly property bool active : (flicker.contentY < -(height * 3 + anchors.bottomMargin * 2));
-
-                        Rectangle {
-                            color: accentColor;
-                            opacity: (pulley.active ? 0.65 : 0.0);
-                            anchors.fill: parent;
-
-                            Behavior on opacity { NumberAnimation { duration: 150; } }
-                        }
-                        Row {
-                            id: entry;
-                            spacing: 16;
-                            anchors {
-                                left: parent.left;
-                                margins: 20;
-                                verticalCenter: parent.verticalCenter;
-                            }
-
-                            Image {
-                                width: (iconSizeNormal.width * 0.65);
-                                height: (iconSizeNormal.height * 0.65);
-                                source: "qrc:///symbols/icon-m-new.png";
-                                smooth: true;
-                                mipmap: true;
-                                fillMode: Image.Stretch;
-                                sourceSize: Qt.size (iconSizeNormal.width * 0.65, iconSizeNormal.height * 0.65);
-                                antialiasing: true;
-                                anchors.verticalCenter: parent.verticalCenter;
-                            }
-                            Text {
-                                text: qsTr ("New folder...");
-                                color: primaryColor;
-                                font {
-                                    family: fontName;
-                                    weight: Font.Light;
-                                    pixelSize: fontSizeNormal;
-                                }
-                                anchors.verticalCenter: parent.verticalCenter;
-                            }
-                        }
-
+                    MenuItem {
+                        text: qsTr ("Create new folder...");
+                        onClicked: { createFolder (); }
                     }
                 }
                 Column {
@@ -932,15 +861,30 @@ Item {
                     }
                 }
             }
+            Rectangle {
+                visible: edit;
+                opacity: 0.35;
+                implicitHeight: statusbar.height;
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: "transparent"; }
+                    GradientStop { position: 0.5; color: "black"; }
+                    GradientStop { position: 1.0; color: "black"; }
+                }
+                anchors {
+                    left: parent.left;
+                    right: parent.right;
+                    bottom: parent.bottom;
+                }
+            }
             DropArea {
                 keys: ["LAUNCHER_ICON"];
-                visible: (currentMovingIcon !== null);
+                visible: edit;
+                enabled: (currentMovingIcon !== null);
+                implicitHeight: iconSizeNormal.height;
                 anchors {
                     top: parent.top;
                     left: parent.left;
                     right: parent.right;
-                    bottom: flicker.top;
-                    bottomMargin: -10;
                 }
                 onEntered: { animScrollUp.start (); }
                 onExited:  { animScrollUp.stop (); }
@@ -952,16 +896,22 @@ Item {
                     interval: 20;
                     onTriggered: { flicker.contentY = Math.max ((flicker.contentY -10), 0); }
                 }
+                Rectangle {
+                    color: secondaryColor;
+                    opacity: 0.35;
+                    visible: parent.containsDrag;
+                    anchors.fill: parent;
+                }
             }
             DropArea {
                 keys: ["LAUNCHER_ICON"];
-                visible: (currentMovingIcon !== null);
+                visible: edit;
+                enabled: (currentMovingIcon !== null);
+                implicitHeight: statusbar.height;
                 anchors {
-                    top: toolbar.top;
                     left: parent.left;
                     right: parent.right;
                     bottom: parent.bottom;
-                    topMargin: -10;
                 }
                 onEntered: { animScrollDown.start (); }
                 onExited:  { animScrollDown.stop (); }
@@ -973,45 +923,11 @@ Item {
                     interval: 20;
                     onTriggered: { flicker.contentY = Math.min ((flicker.contentY +10), (flicker.contentHeight - flicker.height)); }
                 }
-            }
-            Item {
-                id: toolbar;
-                visible: edit;
-                implicitHeight: headerSize;
-                anchors {
-                    left: parent.left;
-                    right: parent.right;
-                    bottom: parent.bottom;
-                }
-
                 Rectangle {
-                    color: primaryColor;
-                    opacity: 0.15;
+                    color: secondaryColor;
+                    opacity: 0.35;
+                    visible: parent.containsDrag;
                     anchors.fill: parent;
-                }
-                MouseArea {
-                    implicitWidth: (parent.width * 0.35);
-                    implicitHeight: (headerSize * 0.85);
-                    anchors.centerIn: parent;
-                    onClicked: { leaveEditMode (); }
-
-                    Rectangle {
-                        color: "black";
-                        radius: 7;
-                        opacity: 0.35;
-                        antialiasing: true;
-                        anchors.fill: parent;
-                    }
-                    Text {
-                        text: qsTr ("Exit edit mode");
-                        color: primaryColor;
-                        font {
-                            family: fontName;
-                            weight: Font.Light;
-                            pixelSize: fontSizeNormal;
-                        }
-                        anchors.centerIn: parent;
-                    }
                 }
             }
             Item {

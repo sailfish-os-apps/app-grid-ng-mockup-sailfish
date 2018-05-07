@@ -655,5 +655,8 @@
         <file>qml/components/silica-proxy/RemorseItem.qml</file>
         <file>qml/components/silica-fake/THIS FOLDER FAKES SILICA OBJECTS</file>
         <file>qml/components/silica-proxy/THIS FOLDER WRAPS SILICA OBJECTS</file>
+        <file>qml/components/silica-proxy/MenuItem.qml</file>
+        <file>qml/components/silica-proxy/PullDownMenu.qml</file>
+        <file>qml/components/silica-proxy/SilicaFlickable.qml</file>
     </qresource>
 </RCC>

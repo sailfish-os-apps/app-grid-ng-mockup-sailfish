@@ -12,10 +12,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>New folder...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Exit edit mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -71,6 +67,10 @@ are going to be uninstalled</source>
     </message>
     <message>
         <source>and everything is fake !</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create new folder...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
